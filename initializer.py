@@ -56,16 +56,11 @@ def compute_umap_concept_vectors(concept_vecs, mapper):
     return mapper.transform(concept_vecs.T)
 
 def compute_umap_factor_vectors(factor_statement_df, factor_vectors_matrix, mapper):
-    factor_labels = factor_statement_df['concept_cat']
-    for i in range(0, 243):
-        if (i in np.setdiff1d(np.arange(0, 243, 1), np.unique(factor_labels))):
-            # No factors grounded to the ith concept
-            continue;
-        
-        fvm = factor_vectors_matrix[np.where(factor_labels == i)]
-        fv_2d_map = mapper.transform(fvm)
-        factor_statement_df.loc[factor_statement_df['concept_cat'] == i, 'fv_2d_map_x'] = fv_2d_map[:, 0]
-        factor_statement_df.loc[factor_statement_df['concept_cat'] == i, 'fv_2d_map_y'] = fv_2d_map[:, 1]
+    print("Computing umap for factors... This might take a while")
+    fv_2d_map = mapper.transform(factor_vectors_matrix)
+    factor_statement_df['fv_2d_map_x'] = fv_2d_map[:, 0]
+    factor_statement_df['fv_2d_map_y'] = fv_2d_map[:, 1]
+    print("Finished computing umap for factors")
 
 def compute_clusters(factor_statement_df):
     print("Computing clusters...")
