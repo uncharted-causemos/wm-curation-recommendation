@@ -53,7 +53,7 @@ def compute_umapper(factor_vectors_matrix, concept_vecs):
     return umap.UMAP(n_components=2).fit(np.concatenate([factor_vectors_matrix, concept_vecs.T]))
     
 def compute_umap_concept_vectors(concept_vecs, mapper):
-    return mapper.transform(concept_vecs)
+    return mapper.transform(concept_vecs.T)
 
 def compute_umap_factor_vectors(factor_statement_df, factor_vectors_matrix, mapper):
     factor_labels = factor_statement_df['concept_cat']
@@ -86,7 +86,7 @@ def reshape_factor_vectors(factor_vectors):
 
 # Vectorize
 def vectorize(factors, nlp):
-    print("Vectorizing factors")
+    print("Vectorizing factors... This will take a while")
     factor_vectors = list(map(lambda x: nlp(x).vector, factors))
     print("Finished vectorizing factors")
     return factor_vectors
