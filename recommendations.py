@@ -1,5 +1,11 @@
+import pandas as pd
+
 def get_others_with_close_candidates(statement_id, factor_type, new_concept, score_threshold, factor_statement_df):
     selected_row = factor_statement_df[(factor_statement_df['statements'] == statement_id) & (factor_statement_df['type'] == factor_type)]
+    
+    if selected_row.shape[0] == 0:
+        print("Unable to find record by statement_id & type in get_others_with_close_candidates")
+        return selected_row
     
     # Find other candidates with second/third/fourth/fifth concepts same as new concept
     current_concept = selected_row['concept'].values[0]
@@ -26,6 +32,10 @@ def get_others_with_close_candidates(statement_id, factor_type, new_concept, sco
 def get_doc_intersection_for_single_evidence_factors(statement_id, factor_type, statements, evidence, factor_statement_df):
     selected_row = factor_statement_df[(factor_statement_df['statements'] == statement_id) & (factor_statement_df['type'] == factor_type)]
     
+    if selected_row.shape[0] == 0:
+        print("Unable to find record by statement_id & type in get_doc_intersection_for_single_evidence_factors")
+        return selected_row
+    
     # Find same factors (i.e those factors that after removing stopwords are the same)
     is_same_factor = factor_statement_df['factor'] == selected_row['factor'].values[0]
     is_same_concept = factor_statement_df['concept'] == selected_row['concept'].values[0]
@@ -50,8 +60,13 @@ def get_doc_intersection_for_single_evidence_factors(statement_id, factor_type, 
     
     return factor_statement_df[ (is_same_concept) & factor_statement_df['statements'].isin(statements_with_same_evidence_ids)]
 
-def get_same_clusters(statment_id, factor_type, factor_statement_df):
+def get_same_clusters(statement_id, factor_type, factor_statement_df):
     selected_row = factor_statement_df[(factor_statement_df['statements'] == statement_id) & (factor_statement_df['type'] == factor_type)]
+    
+    if selected_row.shape[0] == 0:
+        print("Unable to find record by statement_id & type in get_same_clusters")
+        return selected_row
+    
     is_same_concept = factor_statement_df['concept'] == selected_row['concept'].values[0]
     is_same_cluster_id = factor_statement_df['cluster_labels'] == selected_row['cluster_labels'].values[0]
     

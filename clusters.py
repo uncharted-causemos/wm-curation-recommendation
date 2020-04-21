@@ -16,4 +16,4 @@ def compute_ith_concept_cluster(i, clusterer, factor_statement_df):
     
     # TODO: There might be a smarter way to do this faster
     for index, factor in enumerate(factors_unique):
-        factor_statement_df[is_ith_concept & factor_statement_df['factor'] == factor] =  cluster_labels[index]
+        factor_statement_df.loc[is_ith_concept & (factor_statement_df['factor'] == factor), 'cluster_labels'] =  cluster_labels[index]
