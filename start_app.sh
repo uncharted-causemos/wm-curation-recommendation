@@ -1,2 +1,4 @@
-python -m spacy download en_core_web_lg
-export FLASK_APP=app.py && flask run
+#!/bin/bash
+source .venv/bin/activate
+export FLASK_APP=app.py
+flask run
