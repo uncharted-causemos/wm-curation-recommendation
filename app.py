@@ -13,12 +13,13 @@ with app.app_context():
     factor_statement_df, mapper, cv_map, concepts, statements, evidence = init()
 
 
-@app.route("/recommendations/regrounding", methods=['GET'])
+@app.route("/recommendations/regrounding", methods=['POST'])
 def regrounding_recommendations():
-    statement_id = request.args.get('statement_id')
-    factor_type = request.args.get('type')
-    new_concept = request.args.get('new_concept')
-    statement_subspace = request.args.getlist('statement_subspace')
+    body = request.get_json()
+    statement_id = body['statement_id']
+    factor_type = body['type']
+    new_concept = body['new_concept']
+    statement_subspace = body['statement_subspace']
 
     recommendations = get_recommendations(
         statement_id, factor_type, new_concept, statement_subspace, statements, evidence, factor_statement_df)
@@ -60,10 +61,11 @@ def regrounding_recommendation_decisions():
     return {}
 
 
-@app.route("/clusters", methods=['GET'])
+@app.route("/clusters", methods=['POST'])
 def clusters():
-    concept = request.args.get('concept')
-    statement_ids = request.args.getlist('statement_subspace')
+    body = request.get_json()
+    concept = body['concept']
+    statement_ids = body['statement_subspace']
 
     concept_filter = factor_statement_df['concept'] == concept
     statement_id_filter = factor_statement_df['statements'].isin(statement_ids)
