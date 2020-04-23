@@ -75,13 +75,13 @@ def clusters():
     factor_statment_dict = json.loads(factor_statement_json_string)
 
     clusters = list(map(lambda x: {'statement_id': x['statements'], 'type': x['type'], 'cluster_label': x['cluster_labels'], 'coords': {
-                    'x': str(x['fv_2d_map_x']), 'y': str(x['fv_2d_map_y'])}}, factor_statment_dict))
+                    'x': float(x['fv_2d_map_x']), 'y': float(x['fv_2d_map_y'])}}, factor_statment_dict))
 
     response = {
         'concept': {
             'coords': {
-                'x': str(cv_map[concepts.index('/' + concept)][0]),
-                'y': str(cv_map[concepts.index('/' + concept)][1])
+                'x': float(cv_map[concepts.index('/' + concept)][0]),
+                'y': float(cv_map[concepts.index('/' + concept)][1])
             }
         },
         'clusters': clusters
