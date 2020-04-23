@@ -1,0 +1,6 @@
+.venv/
+.vscode/
+data/
+!data/evidence.json
+!data/statements.json
+!data/wm_with_flattened_interventions_metadata.yml
