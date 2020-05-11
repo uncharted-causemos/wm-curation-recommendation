@@ -1,51 +1,76 @@
-from services.word_embeddings import WordEmbeddings
+import re
 from spacy.lemmatizer import Lemmatizer
+import spacy
+import os
+from numpy import linalg as LA
 
-class FactorEmbeddingService:
-    client = None;
-    lemmatizer = Lemmatizer(nlp.vocab.lookups)
+# TODO: Read in glove embeddings that Eidos uses
 
-    def __init__(self):
-        self.client = Elasticsearch(
-            ['localhost'], #TODO LATER: change to read from .env
-            http_auth=('', ''), #TODO LATER: add authentication
-            scheme="https",
-            port=443,
-        )
-    
-    def compute_vector(sentence):
-        return WordEmbeddings.get_vector(sentence)
 
-    def clean(sentence):
-        sentence = sentence.lower()
-        sentence = remove_special_chars(sentence)
-        sentence = remove_stopwords(sentence)
-        sentence = remove_multiple_spaces(sentence)
-        sentence = trim(sentence)
-        sentence = lemmatize(sentence)
-        return sentence
+def _init_embeddings():
+    global _nlp
+    print("Reading in embeddings. This may take a while...")
+    _nlp = spacy.load(os.getenv("embeddings_file_path"))
+    print("Finished reading embeddings.")
 
-    def remove_special_chars(sentence):
-        return re.sub('[^a-zA-Z]', " ", sentence)
 
-    def remove_multiple_spaces(sentence):
-        return re.sub('\s+', ' ', sentence)
+def _init_lemmatizer():
+    # TODO: Should I be lemmatizing given that Eidos doesn't?
+    global _lemmatizer
+    _lemmatizer = Lemmatizer(_nlp.vocab.lookups)
 
-    def trim(sentence):
-        return sentence.strip()
 
-    def remove_stopwords(sentence):
-        return " ".join([word for word in sentence.split(" ") if word not in nlp.Defaults.stop_words])
+def _init_regex():
+    global _regex_multiple_spaces
+    global _regex_special_chars
+    _regex_multiple_spaces = re.compile('\s+')
+    _regex_special_chars = re.compile('[^a-zA-Z]')
 
-    def lemmatize(sentence):
-        return " ".join([lemmatizer.lookup(word) for word in sentence.split(' ')])
 
-    def clean(sentence):
-        sentence = sentence.lower()
-        sentence = remove_special_chars(sentence)
-        sentence = remove_stopwords(sentence)
-        sentence = remove_multiple_spaces(sentence)
-        sentence = trim(sentence)
-        sentence = lemmatize(sentence)
-        return sentence
-    
+def compute_vector(sentence):
+    return _nlp(sentence).vector
+
+
+def compute_normalized_vector(sentence):
+    sentence_vector_300_d = compute_vector(sentence)
+    norm = LA.norm(sentence_vector_300_d)
+
+    if norm != 0.0:
+        sentence_vector_300_d = sentence_vector_300_d / norm
+
+    return sentence_vector_300_d
+
+
+def clean(sentence):
+    sentence = sentence.lower()
+    sentence = _remove_special_chars(sentence)
+    sentence = _remove_stopwords(sentence)
+    sentence = _remove_multiple_spaces(sentence)
+    sentence = _trim(sentence)
+    sentence = _lemmatize(sentence)
+    return sentence
+
+
+def _remove_special_chars(sentence):
+    return re.sub(_regex_special_chars, ' ', sentence)
+
+
+def _remove_multiple_spaces(sentence):
+    return re.sub(_regex_multiple_spaces, ' ', sentence)
+
+
+def _trim(sentence):
+    return sentence.strip()
+
+
+def _remove_stopwords(sentence):
+    return " ".join([word for word in sentence.split(" ") if word not in _nlp.Defaults.stop_words])
+
+
+def _lemmatize(sentence):
+    return " ".join([_lemmatizer.lookup(word) for word in sentence.split(' ')])
+
+
+_init_embeddings()
+_init_lemmatizer()
+_init_regex()
