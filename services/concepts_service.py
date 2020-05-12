@@ -15,8 +15,8 @@ def get_all_concepts():
         }
     )
 
-    sid = data['_scroll_id']
-    scroll_size = len(data['hits']['hits'])
+    sid = data["_scroll_id"]
+    scroll_size = len(data["hits"]["hits"])
 
     concepts = []
     while scroll_size > 0:
@@ -25,8 +25,8 @@ def get_all_concepts():
         concepts = concepts + mapped_results
 
         data = es_client.scroll(scroll_id=sid, scroll="2m")
-        sid = data['_scroll_id']
-        scroll_size = len(data['hits']['hits'])
+        sid = data["_scroll_id"]
+        scroll_size = len(data["hits"]["hits"])
 
     es_client.clear_scroll(scroll_id=sid)
 

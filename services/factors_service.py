@@ -23,16 +23,16 @@ def get_all_factors_for_concept(index_name, concept_name):
         }
     )
 
-    sid = data['_scroll_id']
-    scroll_size = len(data['hits']['hits'])
+    sid = data["_scroll_id"]
+    scroll_size = len(data["hits"]["hits"])
 
     results = []
     while scroll_size > 0:
         results = results + data["hits"]["hits"]
 
         data = es_client.scroll(scroll_id=sid, scroll="2m")
-        sid = data['_scroll_id']
-        scroll_size = len(data['hits']['hits'])
+        sid = data["_scroll_id"]
+        scroll_size = len(data["hits"]["hits"])
 
     es_client.clear_scroll(scroll_id=sid)
     print("Finished fetching all concepts for {}".format(concept_name))
@@ -52,8 +52,8 @@ def get_all_factors(index_name):
         }
     )
 
-    sid = data['_scroll_id']
-    scroll_size = len(data['hits']['hits'])
+    sid = data["_scroll_id"]
+    scroll_size = len(data["hits"]["hits"])
 
     factors = []
     while scroll_size > 0:
@@ -62,8 +62,8 @@ def get_all_factors(index_name):
         factors = factors + mapped_results
 
         data = es_client.scroll(scroll_id=sid, scroll="2m")
-        sid = data['_scroll_id']
-        scroll_size = len(data['hits']['hits'])
+        sid = data["_scroll_id"]
+        scroll_size = len(data["hits"]["hits"])
 
     es_client.clear_scroll(scroll_id=sid)
 

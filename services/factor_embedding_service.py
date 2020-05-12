@@ -15,7 +15,7 @@ def _init_embeddings():
 
 
 def _init_lemmatizer():
-    # TODO: Should I be lemmatizing given that Eidos doesn't?
+    # TODO: Should I be lemmatizing given that Eidos doesn"t?
     global _lemmatizer
     _lemmatizer = Lemmatizer(_nlp.vocab.lookups)
 
@@ -23,8 +23,8 @@ def _init_lemmatizer():
 def _init_regex():
     global _regex_multiple_spaces
     global _regex_special_chars
-    _regex_multiple_spaces = re.compile('\s+')
-    _regex_special_chars = re.compile('[^a-zA-Z]')
+    _regex_multiple_spaces = re.compile("\s+")
+    _regex_special_chars = re.compile("[^a-zA-Z]")
 
 
 def compute_vector(sentence):
@@ -52,11 +52,11 @@ def clean(sentence):
 
 
 def _remove_special_chars(sentence):
-    return re.sub(_regex_special_chars, ' ', sentence)
+    return re.sub(_regex_special_chars, " ", sentence)
 
 
 def _remove_multiple_spaces(sentence):
-    return re.sub(_regex_multiple_spaces, ' ', sentence)
+    return re.sub(_regex_multiple_spaces, " ", sentence)
 
 
 def _trim(sentence):
@@ -68,7 +68,7 @@ def _remove_stopwords(sentence):
 
 
 def _lemmatize(sentence):
-    return " ".join([_lemmatizer.lookup(word) for word in sentence.split(' ')])
+    return " ".join([_lemmatizer.lookup(word) for word in sentence.split(" ")])
 
 
 _init_embeddings()

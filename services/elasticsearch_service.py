@@ -8,8 +8,8 @@ tasks_client = None
 def _init_client():
     global _client
     _client = Elasticsearch(
-        ['localhost'],  # TODO LATER: change to read from .env
-        http_auth=('', ''),  # TODO LATER: add authentication
+        ["localhost"],  # TODO LATER: change to read from .env
+        http_auth=("", ""),  # TODO LATER: add authentication
         scheme="http",
         port=9200,
     )

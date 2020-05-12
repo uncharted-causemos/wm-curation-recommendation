@@ -8,13 +8,13 @@ def compute_clusters(concept_name, factors):
     factor_df = _build_factor_df(factors)
     factor_df = _dedupe_factors(factor_df)
     cluster_ids = _compute_cluster_ids(concept_name, factor_df)
-    factor_df['cluster_id'] = cluster_ids
+    factor_df["cluster_id"] = cluster_ids
     print("Finished computing cluster ids for concept {}".format(concept_name))
     return factor_df
 
 
 def _compute_cluster_ids(concept_name, factor_df):
-    data = np.asarray(factor_df['factor_vector_2_d'].tolist())
+    data = np.asarray(factor_df["factor_vector_2_d"].tolist())
     try:
         if data.shape[0] < 20:
             return _noisy_cluster_ids(data)
