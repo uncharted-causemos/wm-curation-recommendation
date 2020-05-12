@@ -26,7 +26,7 @@ def process():
 
     # Iterate over all documents
     while scroll_size > 0:
-        print("Processing documents from {} to {}".format(total_documents_processed, total_documents_processed + scroll_size))
+        print("Processing statements from {} to {}".format(total_documents_processed, total_documents_processed + scroll_size))
         bulk(es_client, _process_statements_into_factors(data["hits"]["hits"]))
 
         total_documents_processed = total_documents_processed + scroll_size
