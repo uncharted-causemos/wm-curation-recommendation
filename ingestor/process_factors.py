@@ -1,7 +1,8 @@
 import os
-from elasticsearch.helpers import bulk
-from services import embedding_service, es_service
+from collections import deque
 from numpy import linalg as LA
+from elasticsearch.helpers import parallel_bulk
+from services import embedding_service, es_service
 
 
 def process():
@@ -27,7 +28,8 @@ def process():
     # Iterate over all documents
     while scroll_size > 0:
         print("Processing statements from {} to {}".format(total_documents_processed, total_documents_processed + scroll_size))
-        bulk(es_client, _process_statements_into_factors(data["hits"]["hits"]))
+        # TODO: Log failed entries
+        deque(parallel_bulk(es_client, _process_statements_into_factors(data["hits"]["hits"])), maxlen=0)
 
         total_documents_processed = total_documents_processed + scroll_size
 
