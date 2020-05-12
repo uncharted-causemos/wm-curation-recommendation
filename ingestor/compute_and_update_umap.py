@@ -25,8 +25,8 @@ def _compute(concepts, factors):
     concept_vectors_300_d = np.asmatrix(np.array(list(map(lambda x: x["concept_vector_300_d"], concepts))))
     factor_vectors_300_d = np.asmatrix(np.array(list(map(lambda x: x["factor_vector_300_d"], factors))))
 
-    print(concept_vectors_300_d.shape)
-    print(factor_vectors_300_d.shape)
+    print("Concept vectors shape is: {}".format(concept_vectors_300_d.shape))
+    print("Factor vectors shape is: {}".format(factor_vectors_300_d.shape))
 
     mapper = dimension_reduction_service.fit(np.concatenate([concept_vectors_300_d, factor_vectors_300_d]))
     concept_vectors_2_d = dimension_reduction_service.transform(mapper, concept_vectors_300_d)
