@@ -1,5 +1,6 @@
 from elasticsearch import Elasticsearch
 from elasticsearch.client import TasksClient
+import os
 
 client = None
 tasks_client = None
@@ -8,10 +9,10 @@ tasks_client = None
 def _init_client():
     global _client
     _client = Elasticsearch(
-        ["localhost"],  # TODO LATER: change to read from .env
+        os.getenv("ES_HOST"),
         http_auth=("", ""),  # TODO LATER: add authentication
         scheme="http",
-        port=9200,
+        port=os.getenv("ES_PORT")
     )
 
 
