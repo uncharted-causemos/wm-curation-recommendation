@@ -1,6 +1,5 @@
 import os
 from collections import deque
-from numpy import linalg as LA
 from elasticsearch.helpers import parallel_bulk
 from services import embedding_service, es_service
 

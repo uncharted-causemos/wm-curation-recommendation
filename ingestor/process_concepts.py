@@ -1,7 +1,6 @@
 import os
 from elasticsearch.helpers import bulk
 from services import embedding_service, ontology_service, es_service
-from numpy import linalg as LA
 
 
 def process():
