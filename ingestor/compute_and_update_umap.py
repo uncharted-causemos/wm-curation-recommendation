@@ -18,7 +18,7 @@ def compute_and_update():
 def _get_all_concepts_and_factors():
     print("Fetching all vectors for umap.")
     concepts = concepts_service.get_all_concepts()
-    factors = factors_service.get_all_factors(os.getenv("outgoing_kb_index_name"))
+    factors = factors_service.get_all_factors(os.getenv("OUTGOING_KB_INDEX_NAME"))
     print("Finished fetching all vectors for umap.")
     return (concepts, factors)
 
@@ -55,7 +55,7 @@ def _build_factor_update(factors, factor_vectors_2_d):
     for i in range(0, len(factors)):
         yield {
             "_op_type": "update",
-            "_index": os.getenv("outgoing_kb_index_name"),
+            "_index": os.getenv("OUTGOING_KB_INDEX_NAME"),
             "_id": factors[i]["id"],
             "doc": {
                 "factor_vector_2_d": factor_vectors_2_d[i].tolist()
@@ -74,7 +74,7 @@ def _build_concept_update(concepts, concept_vectors_2_d):
     for i in range(0, len(concepts)):
         yield {
             "_op_type": "update",
-            "_index": os.getenv("concepts_index_name"),
+            "_index": os.getenv("CONCEPTS_INDEX_NAME"),
             "_id": concepts[i]["id"],
             "doc": {
                 "concept_vector_2_d": concept_vectors_2_d[i].tolist()

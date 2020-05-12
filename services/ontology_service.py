@@ -1,7 +1,7 @@
 import yaml
 import os
 
-_ontology_file_path = os.getenv("ontology_file_path")
+_ONTOLOGY_FILE_PATH = os.getenv("ONTOLOGY_FILE_PATH")
 _concepts = []
 _examples = []
 
@@ -39,7 +39,7 @@ def _recursively_build_ontology(ontology_yml, sofar, concept_names, examples):
 
 def _read_ontology_yaml_file():
     ontology_yml = None
-    with open(_ontology_file_path, 'r') as stream:
+    with open(_ONTOLOGY_FILE_PATH, 'r') as stream:
         try:
             ontology_yml = yaml.safe_load(stream)
         except yaml.YAMLError as exc:

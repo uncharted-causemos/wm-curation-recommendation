@@ -5,7 +5,7 @@ import os
 def get_all_concepts():
     es_client = es_service.get_client()
     data = es_client.search(
-        index=os.getenv("concepts_index_name"),
+        index=os.getenv("CONCEPTS_INDEX_NAME"),
         size=10000,
         scroll="2m",
         body={

@@ -5,11 +5,11 @@ import sys
 
 # Since the ingestor runs outside the scope of the app
 # we need to add the root path of the app in order to have access to app packages
-app_root_path = Path('.') / '../'
+app_root_path = Path(".") / "../"
 sys.path.insert(1, str(app_root_path.resolve()))
 
 # Load env
-env_path = Path('.') / '../.env'
+env_path = Path(".") / "../.env"
 load_dotenv(dotenv_path=env_path)
 
 import services.elasticsearch_service as es_service

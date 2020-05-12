@@ -10,7 +10,7 @@ from numpy import linalg as LA
 def _init_embeddings():
     global _nlp
     print("Reading in embeddings. This may take a while...")
-    _nlp = spacy.load(os.getenv("embeddings_file_path"))
+    _nlp = spacy.load(os.getenv("EMBEDDINGS_FILE_PATH"))
     print("Finished reading embeddings.")
 
 

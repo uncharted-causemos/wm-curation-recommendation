@@ -2,14 +2,14 @@ import os
 from elasticsearch.helpers import bulk
 import services.factor_embedding_service as fe_service
 import services.elasticsearch_service as es_service
-import services.ontology_service as ont_service
+import services.ontology_service as ontology_service
 from numpy import linalg as LA
 
 
 def process():
     print("Processing concepts.")
-    concept_names = ont_service.get_concept_names()
-    concept_examples = ont_service.get_concept_examples()
+    concept_names = ontology_service.get_concept_names()
+    concept_examples = ontology_service.get_concept_examples()
     concept_embeddings = _compute_concept_embeddings(concept_names, concept_examples)
     _index_concepts(concept_names, concept_examples, concept_embeddings)
     print("Finished processing concepts.")
@@ -18,14 +18,14 @@ def process():
 def _index_concepts(concept_names, concept_examples, concept_embeddings):
     es_client = es_service.get_client()
     bulk(es_client, _build_concepts(concept_names, concept_examples, concept_embeddings))
-    es_client.indices.refresh(index=os.getenv("concepts_index_name"))
+    es_client.indices.refresh(index=os.getenv("CONCEPTS_INDEX_NAME"))
 
 
 def _build_concepts(concept_names, concept_examples, concept_embeddings):
     for i in range(0, len(concept_names)):
         yield {
             "_op_type": "index",
-            "_index": os.getenv("concepts_index_name"),
+            "_index": os.getenv("CONCEPTS_INDEX_NAME"),
             "_source": {
                 "concept": concept_names[i],
                 "examples": concept_examples[i],
@@ -42,7 +42,7 @@ def _compute_concept_embeddings(concept_names, concept_examples):
 
 
 def _get_concept_text_representations(concept_names, concept_examples):
-    cleaned_concept_names = list(map(lambda x: x[x.rfind('/') + 1:].replace('_', ' '), concept_names))
+    cleaned_concept_names = list(map(lambda x: x[x.rfind("/") + 1:].replace("_", " "), concept_names))
     flattened_examples = list(map(lambda x: " ".join(x), concept_examples))
 
     names_and_examples = []
