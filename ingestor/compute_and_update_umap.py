@@ -1,10 +1,7 @@
 import os
 from elasticsearch.helpers import bulk
-import services.factor_embedding_service as fe_service
-import services.elasticsearch_service as es_service
-import services.umap_service as umap_service
-import services.factors_service as factors_service
-import services.concepts_service as concepts_service
+from services import dimension_reduction_service, es_service
+from indices import es_factors, es_concepts
 import numpy as np
 
 
@@ -17,8 +14,8 @@ def compute_and_update():
 
 def _get_all_concepts_and_factors():
     print("Fetching all vectors for umap.")
-    concepts = concepts_service.get_all_concepts()
-    factors = factors_service.get_all_factors(os.getenv("OUTGOING_KB_INDEX_NAME"))
+    concepts = es_concepts.get_all_concepts()
+    factors = es_factors.get_all_factors(os.getenv("OUTGOING_KB_INDEX_NAME"))
     print("Finished fetching all vectors for umap.")
     return (concepts, factors)
 
@@ -31,9 +28,9 @@ def _compute(concepts, factors):
     print(concept_vectors_300_d.shape)
     print(factor_vectors_300_d.shape)
 
-    mapper = umap_service.fit(np.concatenate([concept_vectors_300_d, factor_vectors_300_d]))
-    concept_vectors_2_d = umap_service.transform(mapper, concept_vectors_300_d)
-    factor_vectors_2_d = umap_service.transform(mapper, factor_vectors_300_d)
+    mapper = dimension_reduction_service.fit(np.concatenate([concept_vectors_300_d, factor_vectors_300_d]))
+    concept_vectors_2_d = dimension_reduction_service.transform(mapper, concept_vectors_300_d)
+    factor_vectors_2_d = dimension_reduction_service.transform(mapper, factor_vectors_300_d)
 
     if len(factors) != len(factor_vectors_2_d):
         raise AssertionError  # TODO: Fix

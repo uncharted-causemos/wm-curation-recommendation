@@ -1,4 +1,4 @@
-import services.elasticsearch_service as es_service
+from services import es_service
 import os
 
 
@@ -31,3 +31,24 @@ def get_all_concepts():
     es_client.clear_scroll(scroll_id=sid)
 
     return concepts
+
+
+def get_concept_coord(concept_name):
+    es_client = es_service.get_client()
+    data = es_client.search(
+        index=os.getenv("CONCEPTS_INDEX_NAME"),
+        body={
+            "_source_includes": ["concept_vector_2_d"],
+            "query": {
+                "bool": {
+                    "filter": {
+                        "term": {
+                            "concept": concept_name
+                        }
+                    }
+                }
+            }
+        }
+    )
+
+    return data["hits"]["hits"]["_source"]["concept_vector_2_d"]

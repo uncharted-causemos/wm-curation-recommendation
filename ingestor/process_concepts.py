@@ -1,8 +1,6 @@
 import os
 from elasticsearch.helpers import bulk
-import services.factor_embedding_service as fe_service
-import services.elasticsearch_service as es_service
-import services.ontology_service as ontology_service
+from services import embedding_service, ontology_service, es_service
 from numpy import linalg as LA
 
 
@@ -38,7 +36,7 @@ def _build_concepts(concept_names, concept_examples, concept_embeddings):
 # TODO: Confirm this is how embeddings for concepts should be calculated
 def _compute_concept_embeddings(concept_names, concept_examples):
     concept_text_representations = _get_concept_text_representations(concept_names, concept_examples)
-    return list(map(lambda x: fe_service.compute_normalized_vector(x).tolist(), concept_text_representations))
+    return list(map(lambda x: embedding_service.compute_normalized_vector(x).tolist(), concept_text_representations))
 
 
 def _get_concept_text_representations(concept_names, concept_examples):

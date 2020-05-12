@@ -1,4 +1,4 @@
-import services.elasticsearch_service as es_service
+from services import es_service
 
 
 def get_all_factors_for_concept(index_name, concept_name):

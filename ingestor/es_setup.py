@@ -1,4 +1,4 @@
-import services.elasticsearch_service as es_service
+from services import es_service
 import os
 
 

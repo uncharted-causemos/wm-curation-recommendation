@@ -1,7 +1,5 @@
-import services.ontology_service as ontology_service
-import services.clusters_service as clusters_service
-import services.elasticsearch_service as es_service
-import services.factors_service as factors_service
+from services import ontology_service, clusters_service, es_service
+from indices import es_factors
 from elasticsearch.helpers import bulk
 import os
 
@@ -10,7 +8,7 @@ def compute_and_update():
     concept_names = ontology_service.get_concept_names()
     index_name = os.getenv("OUTGOING_KB_INDEX_NAME")
     for cn in concept_names:
-        results = factors_service.get_all_factors_for_concept(index_name, cn)
+        results = es_factors.get_all_factors_for_concept(index_name, cn)
         if len(results) == 0:
             print("No factors were associated with concept {}. Skipping...".format(cn))
             continue

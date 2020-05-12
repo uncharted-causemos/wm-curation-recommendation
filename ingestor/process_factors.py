@@ -1,7 +1,6 @@
 import os
 from elasticsearch.helpers import bulk
-import services.factor_embedding_service as fe_service
-import services.elasticsearch_service as es_service
+from services import embedding_service, es_service
 from numpy import linalg as LA
 
 
@@ -48,13 +47,13 @@ def _process_statements_into_factors(statements):
 
 
 def _build_factor(factor, factor_type, statement_id):
-    factor_text_cleaned = fe_service.clean(factor["factor"])
+    factor_text_cleaned = embedding_service.clean(factor["factor"])
     # TODO: concept candidates
     return {
         "_op_type": "index",
         "_index": os.getenv("OUTGOING_KB_INDEX_NAME"),
         "_source": {
-            "factor_vector_300_d": fe_service.compute_normalized_vector(factor_text_cleaned).tolist(),
+            "factor_vector_300_d": embedding_service.compute_normalized_vector(factor_text_cleaned).tolist(),
             "concept": factor["concept"],
             "type": factor_type,
             "polarity": factor["polarity"],
