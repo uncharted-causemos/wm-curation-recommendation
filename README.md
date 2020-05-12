@@ -1,11 +1,12 @@
 # Run Ingest:
-  * Pull ES: `docker pull docker.uncharted.software/wm-iaas/populated_indra_and_geodata:0.0.1`
-  * Run ES: `docker run -d -p 9200:9200 docker.uncharted.software/wm-iaas/populated_indra_and_geodata:0.0.1`
-  * Create virtualenv: `virtualenv .venv`
-  * Enable virtualenv: `source .venv/bin/activate`
-  * Pip install: `pip install -r requirements.txt`
-  * Run `python ingest.py`
-
+* Pull ES: `docker pull docker.uncharted.software/wm-iaas/populated_indra_and_geodata:0.0.1`
+* Run ES: `docker run -d -p 9200:9200 docker.uncharted.software/wm-iaas/populated_indra_and_geodata:0.0.1`
+* Download spacy models from [here](https://github.com/explosion/spacy-models/releases//tag/en_core_web_lg-2.2.5), unzip and put folder in `data/` directory
+* Download the `wm_with_flattened_interventions_metadata.yml` [here](https://github.com/WorldModelers/Ontologies/blob/master/wm_with_flattened_interventions_metadata.yml) and place in the `data/` directory
+* Create virtualenv: `virtualenv .venv`
+* Enable virtualenv: `source .venv/bin/activate`
+* Pip install: `pip install -r requirements.txt`
+* Run `python ingest.py`
 
 ### Verify Ingest 
 Make sure that a factor at random has the expected document structure
@@ -33,6 +34,9 @@ curl -X GET "localhost:9200/curation_recommendation_kb_indra-48db558a-8fcb-11ea-
 }
 '
 ```
+
+# Run Linting
+You can run linting using: `flake8 --exclude .venv,.vscode,__pycache__,data .`
 
 # Setup App (Outdated for now)
 
