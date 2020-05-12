@@ -5,7 +5,6 @@ import os
 from numpy import linalg as LA
 
 # TODO: Read in glove embeddings that Eidos uses
-# TODO: Rename to embedding_service
 
 
 def _init_embeddings():
