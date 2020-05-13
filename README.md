@@ -5,6 +5,7 @@
 * Download the `wm_with_flattened_interventions_metadata.yml` [here](https://github.com/WorldModelers/Ontologies/blob/master/wm_with_flattened_interventions_metadata.yml) and place in the `data/` directory
 * Create virtualenv: `virtualenv .venv`
 * Enable virtualenv: `source .venv/bin/activate`
+* Copy `.env.example` to `.env`
 * Pip install: `pip install -r requirements.txt`
 * Run `python ingestor/ingest.py`
 
