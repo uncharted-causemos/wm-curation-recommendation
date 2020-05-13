@@ -42,7 +42,7 @@ def process():
 
 def _process_statements_into_factors(statements):
     for statement in statements:
-        statement_id = statement['_source']['id']
+        statement_id = statement['_source']['id']  # FIXME: Should this be id or indra_id?
         yield _build_factor(statement['_source']['subj'], 'subj', statement_id)
         yield _build_factor(statement['_source']['obj'], 'obj', statement_id)
 

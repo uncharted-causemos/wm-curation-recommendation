@@ -2,6 +2,7 @@
 **/data
 .venv
 .vscode
+*.stats
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

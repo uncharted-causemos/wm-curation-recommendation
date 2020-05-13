@@ -1,7 +1,7 @@
 import os
 from elasticsearch.helpers import bulk
+from es_helpers import es_factors_helper, es_concepts_helper
 from services import dimension_reduction_service, es_service
-from indices import es_factors, es_concepts
 import numpy as np
 
 
@@ -14,8 +14,8 @@ def compute_and_update():
 
 def _get_all_concepts_and_factors():
     print('Fetching all vectors for umap.')
-    concepts = es_concepts.get_all_concepts()
-    factors = es_factors.get_all_factors(os.getenv('OUTGOING_KB_INDEX_NAME'))
+    concepts = es_concepts_helper.get_all_concepts()
+    factors = es_factors_helper.get_all_factors(os.getenv('OUTGOING_KB_INDEX_NAME'))
     print('Finished fetching all vectors for umap.')
     return (concepts, factors)
 

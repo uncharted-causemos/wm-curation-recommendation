@@ -1,11 +1,12 @@
 from services import es_service
-import os
+
+# TODO: Factor out the logic of scrolling through entire sets.
 
 
-def get_all_concepts():
+def get_all_factors(index_name):
     es_client = es_service.get_client()
     data = es_client.search(
-        index=os.getenv('CONCEPTS_INDEX_NAME'),
+        index=index_name,
         size=10000,
         scroll='2m',
         body={
@@ -18,11 +19,11 @@ def get_all_concepts():
     sid = data['_scroll_id']
     scroll_size = len(data['hits']['hits'])
 
-    concepts = []
+    factors = []
     while scroll_size > 0:
         results = data['hits']['hits']
-        mapped_results = list(map(lambda x: {'concept_vector_300_d': x['_source']['concept_vector_300_d'], 'id': x['_id']}, results))
-        concepts = concepts + mapped_results
+        mapped_results = list(map(lambda x: {'factor_vector_300_d': x['_source']['factor_vector_300_d'], 'id': x['_id']}, results))
+        factors = factors + mapped_results
 
         data = es_client.scroll(scroll_id=sid, scroll='2m')
         sid = data['_scroll_id']
@@ -30,25 +31,26 @@ def get_all_concepts():
 
     es_client.clear_scroll(scroll_id=sid)
 
-    return concepts
+    return factors
 
 
-def get_concept_coord(concept_name):
+def get_factor(statement_id, factor_type):
     es_client = es_service.get_client()
     data = es_client.search(
-        index=os.getenv('CONCEPTS_INDEX_NAME'),
+        index=index_name,
         body={
-            '_source_includes': ['concept_vector_2_d'],
             'query': {
                 'bool': {
                     'filter': {
                         'term': {
-                            'concept': concept_name
+                            'statement_id': statement_id
+                        },
+                        'term': {
+                            'type': factor_type
                         }
                     }
                 }
             }
         }
     )
-
-    return data['hits']['hits']['_source']['concept_vector_2_d']
+    return data['hits']['hits']['_source']

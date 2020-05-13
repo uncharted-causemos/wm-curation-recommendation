@@ -3,7 +3,6 @@ from pathlib import Path
 from dotenv import load_dotenv, find_dotenv
 import sys
 
-
 # Since the ingestor runs outside the scope of the app
 # we need to add the root path of the app in order to have access to app packages
 script_dir, script_path = os.path.split(os.path.abspath(sys.argv[0]))
@@ -26,5 +25,3 @@ process_factors.process()
 process_concepts.process()
 compute_and_update_umap.compute_and_update()
 compute_and_update_clusters.compute_and_update()
-
-# TODO: Close es_client
