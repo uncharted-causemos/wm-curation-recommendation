@@ -26,7 +26,7 @@ def process():
 
     # Iterate over all documents
     while scroll_size > 0:
-        print(r"Processing statements from {total_documents_processed} to {total_documents_processed + scroll_size}")
+        print(f"Processing statements from {total_documents_processed} to {total_documents_processed + scroll_size}")
         # TODO: Log failed entries
         deque(parallel_bulk(es_client, _process_statements_into_factors(data["hits"]["hits"])), maxlen=0)
 
