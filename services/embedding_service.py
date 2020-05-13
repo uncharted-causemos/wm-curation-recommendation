@@ -9,13 +9,13 @@ from numpy import linalg as LA
 
 def _init_embeddings():
     global _nlp
-    print("Reading in embeddings. This may take a while...")
-    _nlp = spacy.load(os.getenv("EMBEDDINGS_FILE_PATH"))
-    print("Finished reading embeddings.")
+    print('Reading in embeddings. This may take a while...')
+    _nlp = spacy.load(os.getenv('EMBEDDINGS_FILE_PATH'))
+    print('Finished reading embeddings.')
 
 
 def _init_lemmatizer():
-    # TODO: Should I be lemmatizing given that Eidos doesn"t?
+    # TODO: Should I be lemmatizing given that Eidos doesn't?
     global _lemmatizer
     _lemmatizer = Lemmatizer(_nlp.vocab.lookups)
 
@@ -23,8 +23,8 @@ def _init_lemmatizer():
 def _init_regex():
     global _regex_multiple_spaces
     global _regex_special_chars
-    _regex_multiple_spaces = re.compile("\s+")
-    _regex_special_chars = re.compile("[^a-zA-Z]")
+    _regex_multiple_spaces = re.compile('\s+')
+    _regex_special_chars = re.compile('[^a-zA-Z]')
 
 
 def compute_vector(sentence):
@@ -52,11 +52,11 @@ def clean(sentence):
 
 
 def _remove_special_chars(sentence):
-    return re.sub(_regex_special_chars, " ", sentence)
+    return re.sub(_regex_special_chars, ' ', sentence)
 
 
 def _remove_multiple_spaces(sentence):
-    return re.sub(_regex_multiple_spaces, " ", sentence)
+    return re.sub(_regex_multiple_spaces, ' ', sentence)
 
 
 def _trim(sentence):
@@ -64,11 +64,11 @@ def _trim(sentence):
 
 
 def _remove_stopwords(sentence):
-    return " ".join([word for word in sentence.split(" ") if word not in _nlp.Defaults.stop_words])
+    return ' '.join([word for word in sentence.split(' ') if word not in _nlp.Defaults.stop_words])
 
 
 def _lemmatize(sentence):
-    return " ".join([_lemmatizer.lookup(word) for word in sentence.split(" ")])
+    return ' '.join([_lemmatizer.lookup(word) for word in sentence.split(' ')])
 
 
 _init_embeddings()

@@ -7,7 +7,7 @@ import sys
 # Since the ingestor runs outside the scope of the app
 # we need to add the root path of the app in order to have access to app packages
 script_dir, script_path = os.path.split(os.path.abspath(sys.argv[0]))
-app_root_path = Path(script_dir) / "../"
+app_root_path = Path(script_dir) / '../'
 sys.path.insert(1, str(app_root_path.resolve()))
 
 # Load env

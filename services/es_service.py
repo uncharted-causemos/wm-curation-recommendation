@@ -9,10 +9,10 @@ tasks_client = None
 def _init_client():
     global _client
     _client = Elasticsearch(
-        os.getenv("ES_HOST"),
-        http_auth=("", ""),  # TODO LATER: add authentication
-        scheme="http",
-        port=os.getenv("ES_PORT")
+        os.getenv('ES_HOST'),
+        http_auth=('', ''),  # TODO LATER: add authentication
+        scheme='http',
+        port=os.getenv('ES_PORT')
     )
 
 
