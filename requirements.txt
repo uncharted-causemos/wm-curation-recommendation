@@ -7,4 +7,7 @@ requests==2.23.0
 scikit-learn==0.22.2.post1
 scipy==1.4.1
 spacy==2.2.4
-umap-learn==0.4.1
+umap-learn==0.4.1 
+python-dotenv
+flake8
+elasticsearch  
