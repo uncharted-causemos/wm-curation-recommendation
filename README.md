@@ -6,7 +6,7 @@
 * Create virtualenv: `virtualenv .venv`
 * Enable virtualenv: `source .venv/bin/activate`
 * Pip install: `pip install -r requirements.txt`
-* Run `python ingest.py`
+* Run `python ingestor/ingest.py`
 
 ### Verify Ingest 
 Make sure that a factor at random has the expected document structure
