@@ -9,4 +9,5 @@ scipy==1.4.1
 spacy==2.2.4
 umap-learn==0.4.1 
 python-dotenv
-flake8  
+flake8
+elasticsearch  
