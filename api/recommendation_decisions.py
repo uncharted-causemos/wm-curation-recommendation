@@ -15,6 +15,7 @@ def regrounding_recommendation_decisions():
     project_id = body['project_id']
     recommendation_decisions = body['recommendation_decisions']
 
+    # FIXME: Knowledge base index name should be retrieved from CauseMos mapping of project index to kb index
     _process_regrounding_recommendation_decisions(es_service.get_curation_kb_index_name(os.getenv('INCOMING_KB_INDEX_NAME')), project_id, new_concept,
                                                   statement_id, factor_type, recommendation_decisions)
 

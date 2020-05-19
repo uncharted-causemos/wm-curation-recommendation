@@ -45,6 +45,7 @@ def _get_factors_from_same_cluster(project_index_name, statement_id, factor_type
 
 def _get_factors_from_same_docs(project_index_name, statement_id, factor_type):
     # FIXME: I'm getting num evidence from the knowledge base. This might be an issue if say the knowledge base that the project was based on changes
+    # FIXME: Knowledge base index name should be retrieved from CauseMos mapping of project index to kb index
     kb_index_name = os.getenv('INCOMING_KB_INDEX_NAME')
     statement_num_evidences = es_recommendations_helper.get_number_evidences(kb_index_name, statement_id, factor_type)
 
