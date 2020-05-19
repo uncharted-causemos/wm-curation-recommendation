@@ -2,8 +2,8 @@ from elasticsearch import Elasticsearch
 from elasticsearch.client import TasksClient
 import os
 
-client = None
-tasks_client = None
+_client = None
+_tasks_client = None
 
 
 def _init_client():
@@ -18,7 +18,7 @@ def _init_client():
 
 def _init_tasks_client():
     global _tasks_client
-    _tasks_client = TasksClient(client)
+    _tasks_client = TasksClient(_client)
 
 
 def get_client():
@@ -26,7 +26,7 @@ def get_client():
     return _client
 
 
-def tasks_client():
+def get_tasks_client():
     # TODO: check client is still active
     return _tasks_client
 
