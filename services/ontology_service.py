@@ -34,6 +34,13 @@ def _recursively_build_ontology(ontology_yml, sofar, concept_names, examples):
         component_name = list(component.keys())[0]
         current = '/' + component_name if sofar != '' else component_name
 
+        # Since factors can be grounded to every level of the hierarchy:
+        concept_names.append(sofar + current)
+        if 'examples' in component:
+            examples.append(component['examples'])
+        else:
+            examples.append([])
+
         _recursively_build_ontology(component[component_name], sofar + current, concept_names, examples)
 
 
