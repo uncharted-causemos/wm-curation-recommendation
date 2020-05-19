@@ -36,7 +36,7 @@ def process():
         sid = data['_scroll_id']
         scroll_size = len(data['hits']['hits'])
 
-    es_client.indices.refresh(index=os.getenv('OUTGOING_KB_INDEX_NAME'))
+    es_client.indices.refresh(index=es_service.get_curation_kb_index_name(os.getenv('INCOMING_KB_INDEX_NAME')))
     es_client.clear_scroll(scroll_id=sid)
 
 
@@ -52,7 +52,7 @@ def _build_factor(factor, factor_type, statement_id):
     # TODO: concept candidates
     return {
         '_op_type': 'index',
-        '_index': os.getenv('OUTGOING_KB_INDEX_NAME'),
+        '_index': es_service.get_curation_kb_index_name(os.getenv('INCOMING_KB_INDEX_NAME')),
         '_source': {
             'factor_vector_300_d': embedding_service.compute_normalized_vector(factor_text_cleaned).tolist(),
             'concept': factor['concept'],

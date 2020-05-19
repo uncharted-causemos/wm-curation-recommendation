@@ -14,7 +14,7 @@ def setup_concept_index():
 
 def _delete_outgoing_kb_index():
     es_client = es_service.get_client()
-    OUTGOING_KB_INDEX_NAME = os.getenv('OUTGOING_KB_INDEX_NAME')
+    OUTGOING_KB_INDEX_NAME = es_service.get_curation_kb_index_name(os.getenv('INCOMING_KB_INDEX_NAME'))
 
     if es_client.indices.exists(index=OUTGOING_KB_INDEX_NAME) and os.getenv('DELETE_OUTGOING_KB_INDEX_IF_EXISTS') == 'true':
         print('Deleting outgoing kb index!')
@@ -23,7 +23,7 @@ def _delete_outgoing_kb_index():
 
 def _create_outgoing_kb_index():
     es_client = es_service.get_client()
-    OUTGOING_KB_INDEX_NAME = os.getenv('OUTGOING_KB_INDEX_NAME')
+    OUTGOING_KB_INDEX_NAME = es_service.get_curation_kb_index_name(os.getenv('INCOMING_KB_INDEX_NAME'))
 
     if es_client.indices.exists(index=OUTGOING_KB_INDEX_NAME) is False:
         print('Setting outgoing kb index mapping')

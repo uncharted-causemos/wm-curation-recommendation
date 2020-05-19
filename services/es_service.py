@@ -31,5 +31,13 @@ def tasks_client():
     return _tasks_client
 
 
+def get_curation_project_index_name(project_id):
+    return 'curation_recomendations_project_' + project_id
+
+
+def get_curation_kb_index_name(kb_id):
+    return 'curation_recommendation_kb_' + kb_id
+
+
 _init_client()
 _init_tasks_client()

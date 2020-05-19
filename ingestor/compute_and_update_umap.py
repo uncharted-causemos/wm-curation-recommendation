@@ -15,9 +15,12 @@ def compute_and_update():
 def _get_all_concepts_and_factors():
     print('Fetching all vectors for umap.')
     concepts = es_concepts_helper.get_all_concepts()
-    factors = es_factors_helper.get_all_factors(os.getenv('OUTGOING_KB_INDEX_NAME'))
+    mapped_concepts = list(map(lambda x: {'concept_vector_300_d': x['_source']['concept_vector_300_d'], 'id': x['_id']}, concepts))
+
+    factors = es_factors_helper.get_all_factors(es_service.get_curation_kb_index_name(os.getenv('INCOMING_KB_INDEX_NAME')), ['factor_vector_300_d'])
+    mapped_factors = list(map(lambda x: {'factor_vector_300_d': x['_source']['factor_vector_300_d'], 'id': x['_id']}, factors))
     print('Finished fetching all vectors for umap.')
-    return (concepts, factors)
+    return (mapped_concepts, mapped_factors)
 
 
 def _compute(concepts, factors):
@@ -52,7 +55,7 @@ def _build_factor_update(factors, factor_vectors_2_d):
     for i in range(0, len(factors)):
         yield {
             '_op_type': 'update',
-            '_index': os.getenv('OUTGOING_KB_INDEX_NAME'),
+            '_index': es_service.get_curation_kb_index_name(os.getenv('INCOMING_KB_INDEX_NAME')),
             '_id': factors[i]['id'],
             'doc': {
                 'factor_vector_2_d': factor_vectors_2_d[i].tolist()
