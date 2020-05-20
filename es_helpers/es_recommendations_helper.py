@@ -1,7 +1,7 @@
 from services import es_service
 
 
-def get_all_factors_with_cluster_id(index_name, concept, cluster_id):
+def get_all_factors_with_cluster_id(index_name, concept, cluster_id, statement_subspace):
     es_client = es_service.get_client()
     data = es_client.search(
         index=index_name,
@@ -15,6 +15,11 @@ def get_all_factors_with_cluster_id(index_name, concept, cluster_id):
                         'term': {
                             'cluster_id': cluster_id
                         },
+                    },
+                    'filter': {
+                        'terms': {
+                            'statement_id': statement_subspace
+                        }
                     }
                 }
             }
@@ -23,7 +28,11 @@ def get_all_factors_with_cluster_id(index_name, concept, cluster_id):
     return list(map(lambda x: x['_source'], data['hits']['hits']))
 
 
-def get_all_factors_with_statement_ids(index_name, statement_ids):
+def get_all_factors_with_statement_ids(index_name, statement_ids, statement_subspace):
+    statement_id_filter = set(statement_ids).intersection(set(statement_subspace))
+    if len(statement_id_filter) == 0:
+        return []
+
     es_client = es_service.get_client()
     data = es_client.search(
         index=index_name,
@@ -44,23 +53,8 @@ def get_all_factors_with_statement_ids(index_name, statement_ids):
 
 
 def get_all_factors_within_concept_score_threshold(index_name, new_concept, existing_concept, score_threshold):
-    es_client = es_service.get_client()
-    data = es_client.search(
-        index=index_name,
-        _source_includes=['statement_id', 'type'],
-        body={
-            'query': {
-                'bool': {
-                    'filter': {
-                        'terms': {
-                            'statement_id': statement_ids
-                        }
-                    }
-                }
-            }
-        }
-    )
-    return list(map(lambda x: x['_source'], data['hits']['hits']))
+    # TODO: Implement
+    pass
 
 
 def get_statement_ids_with_doc_ids(index_name, doc_id):

@@ -18,8 +18,8 @@ def regrounding_recommendations():
     project_index_name = es_service.get_curation_project_index_name(project_id)
 
     results = []
-    results = results + _get_factors_from_same_cluster(project_index_name, statement_id, factor_type)
-    results = results + _get_factors_from_same_docs(project_index_name, statement_id, factor_type)
+    results = results + _get_factors_from_same_cluster(project_index_name, statement_id, factor_type, statement_subspace)
+    results = results + _get_factors_from_same_docs(project_index_name, statement_id, factor_type, statement_subspace)
     results = results + _get_factors_with_similar_candidates()
 
     results = list(map(lambda x: {'statement_id': x['statement_id'], 'type': x['type']}, results))
@@ -37,13 +37,14 @@ def _get_factors_with_similar_candidates():
     return []
 
 
-def _get_factors_from_same_cluster(project_index_name, statement_id, factor_type):
+def _get_factors_from_same_cluster(project_index_name, statement_id, factor_type, statement_subspace):
     factor = es_factors_helper.get_factor(project_index_name, statement_id, factor_type)
-    factors_with_same_cluster_id = es_recommendations_helper.get_all_factors_with_cluster_id(project_index_name, factor['concept'], factor['cluster_id'])
+    factors_with_same_cluster_id = es_recommendations_helper.get_all_factors_with_cluster_id(
+        project_index_name, factor['concept'], factor['cluster_id'], statement_subspace)
     return factors_with_same_cluster_id
 
 
-def _get_factors_from_same_docs(project_index_name, statement_id, factor_type):
+def _get_factors_from_same_docs(project_index_name, statement_id, factor_type, statement_subspace):
     # FIXME: I'm getting num evidence from the knowledge base. This might be an issue if say the knowledge base that the project was based on changes
     # FIXME: Knowledge base index name should be retrieved from CauseMos mapping of project index to kb index
     kb_index_name = os.getenv('INCOMING_KB_INDEX_NAME')
@@ -55,5 +56,5 @@ def _get_factors_from_same_docs(project_index_name, statement_id, factor_type):
 
     statement_doc_id = es_recommendations_helper.get_statement_doc_id(kb_index_name, statement_id, factor_type)
     shared_doc_id_statement_ids = es_recommendations_helper.get_statement_ids_with_doc_ids(kb_index_name, statement_doc_id)
-    factors_with_same_doc_id = es_recommendations_helper.get_all_factors_with_statement_ids(project_index_name, shared_doc_id_statement_ids)
+    factors_with_same_doc_id = es_recommendations_helper.get_all_factors_with_statement_ids(project_index_name, shared_doc_id_statement_ids, statement_subspace)
     return factors_with_same_doc_id

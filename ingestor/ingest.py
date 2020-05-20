@@ -20,6 +20,7 @@ import es_setup
 
 es_setup.setup_outgoing_kb_index()
 es_setup.setup_concept_index()
+es_setup.setup_recommendation_decisions_index()
 
 process_factors.process()
 process_concepts.process()

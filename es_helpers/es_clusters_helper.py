@@ -1,4 +1,4 @@
-from services import es_service, ontology_service
+from services import es_service
 import os
 
 

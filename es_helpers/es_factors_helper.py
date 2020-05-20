@@ -1,6 +1,24 @@
 from services import es_service
 
-# TODO: Factor out the logic of scrolling through entire sets.
+
+_factor_index_mapping = {
+    'properties': {
+        'concept': {'type': 'keyword'},
+        'type': {'type': 'keyword'},
+        'factor_cleaned': {'type': 'keyword'},
+        'statement_id': {'type': 'keyword'},
+        'cluster_id': {'type': 'integer'},
+        'polarity': {'type': 'integer'}
+    }
+}
+
+
+def get_kb_index_mapping():
+    return _factor_index_mapping
+
+
+def get_project_index_mapping():
+    return _factor_index_mapping
 
 
 def get_all_factors(index_name, source_fields):

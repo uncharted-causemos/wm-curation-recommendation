@@ -1,6 +1,16 @@
 from services import es_service
 import os
 
+_concept_index_mapping = {
+    'properties': {
+        'concept': {'type': 'keyword'}
+    }
+}
+
+
+def get_concept_index_mapping():
+    return _concept_index_mapping
+
 
 def get_all_concepts():
     es_client = es_service.get_client()

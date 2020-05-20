@@ -1,5 +1,6 @@
 import os
 from services import es_service
+from es_helpers import es_factors_helper, es_concepts_helper, es_recommendation_decisions_helper
 
 
 def setup_outgoing_kb_index():
@@ -10,6 +11,20 @@ def setup_outgoing_kb_index():
 def setup_concept_index():
     _delete_concept_index()
     _create_concept_index()
+
+
+def setup_recommendation_decisions_index():
+    es_client = es_service.get_client()
+    RECOMMENDATION_DECISIONS_INDEX_NAME = os.getenv('RECOMMENDATION_DECISIONS_INDEX_NAME')
+
+    if es_client.indices.exists(index=RECOMMENDATION_DECISIONS_INDEX_NAME) is False:
+        print('Setting recommendation decisions index mapping')
+        es_client.indices.create(
+            index=RECOMMENDATION_DECISIONS_INDEX_NAME,
+            body={
+                'mappings': es_recommendation_decisions_helper.get_recommendation_decisions_index_mapping()
+            }
+        )
 
 
 def _delete_outgoing_kb_index():
@@ -30,16 +45,7 @@ def _create_outgoing_kb_index():
         es_client.indices.create(
             index=OUTGOING_KB_INDEX_NAME,
             body={
-                'mappings': {
-                    'properties': {
-                        'concept': {'type': 'keyword'},
-                        'type': {'type': 'keyword'},
-                        'factor_cleaned': {'type': 'keyword'},
-                        'statement_id': {'type': 'keyword'},
-                        'cluster_id': {'type': 'integer'},
-                        'polarity': {'type': 'integer'}
-                    }
-                }
+                'mappings': es_factors_helper.get_kb_index_mapping()
             }
         )
 
@@ -62,10 +68,6 @@ def _create_concept_index():
         es_client.indices.create(
             index=CONCEPTS_INDEX_NAME,
             body={
-                'mappings': {
-                    'properties': {
-                        'concept': {'type': 'keyword'}
-                    }
-                }
+                'mappings': es_concepts_helper.get_concept_index_mapping()
             }
         )

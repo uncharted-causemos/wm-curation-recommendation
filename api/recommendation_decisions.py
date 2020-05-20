@@ -32,20 +32,9 @@ def polarity_recommendation_decisions():
 def _process_regrounding_recommendation_decisions(kb_id, project_id, new_concept, statement_id, factor_type, recommendation_decisions):
     def _map_regrounding_rd(rd):
         return {
-            'curation_type': 'regrounding',
-            'project_id': project_id,
-            'kb_id': kb_id,  # FIXME: I should actually be extracted from the project index
-            'curation': {
-                'statement_id': statement_id,
-                'type': factor_type,
-                'old_concept': old_concept,
-                'new_concept': new_concept,
-            },
-            'recommendations': {
-                'statement_id': rd['statement_id'],
-                'type': rd['type'],
-                'accepted': rd['accepted']
-            }
+            'statement_id': rd['statement_id'],
+            'type': rd['type'],
+            'accepted': rd['accepted']
         }
 
     project_index_name = es_service.get_curation_project_index_name(project_id)
@@ -53,5 +42,16 @@ def _process_regrounding_recommendation_decisions(kb_id, project_id, new_concept
     factor = es_factors_helper.get_factor(project_index_name, statement_id, factor_type)
     old_concept = factor['concept']  # The assumption in setting old_concept here is that regrounding recommendations were restricted to a particular concept
 
-    recommendation_decision_docs = list(map(_map_regrounding_rd, recommendation_decisions))
+    recommendation_decision_docs = {
+        'curation_type': 'regrounding',
+        'project_id': project_id,
+        'kb_id': kb_id,  # FIXME: I should actually be extracted from the project index mapipng that CauseMos has
+        'curation': {
+            'statement_id': statement_id,
+            'type': factor_type,
+            'old_concept': old_concept,
+            'new_concept': new_concept,
+        },
+        'recommendations': list(map(_map_regrounding_rd, recommendation_decisions))
+    }
     es_recommendation_decisions_helper.insert_recommendation_decisions(recommendation_decision_docs)

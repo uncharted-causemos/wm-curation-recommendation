@@ -1,4 +1,3 @@
-import os
 from flask import Flask
 from dotenv import load_dotenv, find_dotenv
 
@@ -10,7 +9,6 @@ from api.cluster_map import cluster_map_api
 from api.project import project_api
 from api.recommendation_decisions import recommendation_decisions_api
 from api.recommendations import recommendations_api
-from services import es_service
 
 app = Flask(__name__)
 
