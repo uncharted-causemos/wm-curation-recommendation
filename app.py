@@ -17,5 +17,3 @@ app.register_blueprint(cluster_map_api, url_prefix='/cluster_map')
 app.register_blueprint(project_api, url_prefix='/project')
 app.register_blueprint(recommendation_decisions_api, url_prefix='/recommendation_decisions')
 app.register_blueprint(recommendations_api, url_prefix='/recommendations')
-
-print(app.url_map)
