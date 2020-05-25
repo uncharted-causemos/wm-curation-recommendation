@@ -8,19 +8,11 @@ def get_all_factors_with_cluster_id(index_name, concept, cluster_id, statement_s
         body={
             'query': {
                 'bool': {
-                    'filter': {
-                        'term': {
-                            'concept': concept
-                        },
-                        'term': {
-                            'cluster_id': cluster_id
-                        },
-                    },
-                    'filter': {
-                        'terms': {
-                            'statement_id': statement_subspace
-                        }
-                    }
+                    'filter': [
+                        {'term': {'concept': concept}},
+                        {'term': {'cluster_id': cluster_id}},
+                        {'terms': {'statement_id': statement_subspace}}
+                    ]
                 }
             }
         }
@@ -57,7 +49,8 @@ def get_all_factors_within_concept_score_threshold(index_name, new_concept, exis
     pass
 
 
-def get_statement_ids_with_doc_ids(index_name, doc_id):
+def get_statement_ids_with_doc_id(index_name, doc_id):
+    # TODO: Add check for num_evidences once new mapping is added
     es_client = es_service.get_client()
     data = es_client.search(
         index=index_name,
@@ -69,11 +62,7 @@ def get_statement_ids_with_doc_ids(index_name, doc_id):
                 'query': {
                     'bool': {
                         'must': [
-                            {
-                                'match': {
-                                    'evidences.document_context.doc_id': doc_id
-                                }
-                            }
+                            {'match': {'evidences.document_context.doc_id': doc_id}}
                         ]
                     }
                 }

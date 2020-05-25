@@ -58,14 +58,10 @@ def get_factor(index_name, statement_id, factor_type):
         body={
             'query': {
                 'bool': {
-                    'filter': {
-                        'term': {
-                            'statement_id': statement_id
-                        },
-                        'term': {
-                            'type': factor_type
-                        }
-                    }
+                    'filter': [
+                        {'term': {'statement_id': statement_id}},
+                        {'term': {'type': factor_type}}
+                    ]
                 }
             }
         }

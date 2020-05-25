@@ -75,16 +75,10 @@ def get_cluster_map(index_name, concept, statement_ids):
         body={
             'query': {
                 'bool': {
-                    'filter': {
-                        'term': {
-                            'concept': concept
-                        },
-                    },
-                    'filter': {
-                        'terms': {
-                            'statement_id': statement_ids
-                        }
-                    }
+                    'filter': [
+                        {'term': {'concept': concept}},
+                        {'terms': {'statement_id': statement_ids}}
+                    ]
                 }
             }
         }

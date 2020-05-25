@@ -9,6 +9,8 @@ cluster_map_api = Blueprint('cluster_map_api', __name__)
 def get_cluster_map():
     body = request.get_json()
     concept = body['concept']
+    # FIXME: statement_subspace can grow quite large, and is used in the ES Terms query later on.
+    # There's an upper limit to what can be passed in to Terms Query here: https://www.elastic.co/guide/en/elasticsearch/reference/current/index-modules.html#index-max-terms-count
     statement_ids = body['statement_subspace']
     project_id = body['project_id']
 
@@ -31,8 +33,8 @@ def _format_factor_cluster_point(factor_cluster_point):
         'type': factor_cluster_point['type'],
         'cluster_id': factor_cluster_point['cluster_id'],
         'coords': {
-            'x': float(factor_cluster_point['factor_vector_2_d'][0]),
-            'y': float(factor_cluster_point['factor_vector_2_d'][1])
+            'x': factor_cluster_point['factor_vector_2_d'][0],
+            'y': factor_cluster_point['factor_vector_2_d'][1]
         }
     }
 
@@ -40,7 +42,7 @@ def _format_factor_cluster_point(factor_cluster_point):
 def _format_concept_cluster_point(concept_cluster_point):
     return {
         'coords': {
-            'x': float(concept_cluster_point[0]),
-            'y': float(concept_cluster_point[1])
+            'x': concept_cluster_point[0],
+            'y': concept_cluster_point[1]
         }
     }
