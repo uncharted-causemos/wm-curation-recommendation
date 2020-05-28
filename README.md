@@ -36,6 +36,13 @@ curl -X GET "localhost:9200/curation_recommendation_kb_indra-48db558a-8fcb-11ea-
 '
 ```
 
+# Run App
+* Ensure ingestion has finished
+* Enable virtualenv: `source .venv/bin/activate`
+* Copy `.env.example` to `.env`
+* Pip install: `pip install -r requirements.txt`
+* Run: `python -m flask run` in the root folder
+
 # Run Linting
 You can run linting using: `flake8 --exclude .venv,.vscode,__pycache__,data .`
 
@@ -122,20 +129,7 @@ Two things pop out:
   1531/22    0.004    0.000   22.438    1.020 compiler_lock.py:29(_acquire_compile_lock)
 ```
 
-# Setup App (Outdated for now)
-
-* Ensure there's a data folder in the root folder with two files: `evidence.json` and `statements.json` and `wm_with_flattened_interventions_metadata.yml`
-  * To get `evidence.json` and `statements.json` use mongoexport: `mongoexport --uri="mongodb://10.65.18.52:27017/WM" --collection=dart-20200104-stmts-location --out=data/statements-20200104-stmts-location.json --jsonArray` 
-  * Sometimes only certain evidence is relevant, so to prune use `-q` option like so: `mongoexport --uri="mongodb://10.65.18.52:27017/WM" --collection=evidence --out=data/evidence-20200104-stmts-location-from-mongodb.json --jsonArray -q='{"for_export": true}'`. 
-  * Download spacy [here](https://github.com/explosion/spacy-models/releases/tag/en_core_web_lg-2.2.5). Extract to the `data/` folder.
-
-* You can run it on the host like so:
-  * Create virtualenv: `virtualenv .venv`
-  * Enable virtualenv: `source .venv/bin/activate`
-  * Pip install: `pip install -r requirements.txt`
-  * `chmod +x start_app.sh`
-  * `./start_app.sh`
-
+# Docker Setup (Outdated)
 * Or you can run it in a docker using:
   * Create a data volume `docker volume create --name wmcr-data-volume`
   * Mount the data volume to a dummy container: `docker container create --name dummy -v wmcr-data-volume:/root hello-world`
