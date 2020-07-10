@@ -1,0 +1,13 @@
+FROM python:3.8-buster
+
+WORKDIR /app
+
+COPY ingestor/ ./ingestor
+COPY es_helpers ./es_helpers
+COPY services ./services
+COPY .env ./
+COPY requirements.txt ./
+
+RUN pip install -r requirements.txt
+
+ENTRYPOINT python ingestor/ingest.py && /bin/bash

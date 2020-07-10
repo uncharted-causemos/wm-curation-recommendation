@@ -1,13 +1,36 @@
-# Run Ingest:
+# Docker setup
+To enter a docker container: `docker exec -it <container_id> bash`
+
+## 1. Create a Network
+Create a network by running: `docker network create wmcr-network`
+
+## 2. Docker Setup for ES Container
+In most cases the ES container will already be setup. However if you're developing, you can set one up locally using the following:
+
 * Pull ES: `docker pull docker.uncharted.software/wm-iaas/populated_indra_and_geodata:0.0.1`
-* Run ES: `docker run -d -p 9200:9200 docker.uncharted.software/wm-iaas/populated_indra_and_geodata:0.0.1`
+* Run ES: `docker run --name wmcr-es --network=wmcr-network -d -p 9200:9200 docker.uncharted.software/wm-iaas/populated_indra_and_geodata:0.0.1`
+
+If you have an existing ES service running locally, you should add it to the network: `docker network connect wmcr-network <name-of-es-container>`
+
+## 3. Docker Setup for Data Volume:
+This data volume contains all the word embeddings and ontology files that the app and ingest script use. 
+
 * Download spacy models from [here](https://github.com/explosion/spacy-models/releases//tag/en_core_web_lg-2.2.5), unzip and put folder in `data/` directory
-* Download the `wm_with_flattened_interventions_metadata.yml` [here](https://github.com/WorldModelers/Ontologies/blob/master/wm_with_flattened_interventions_metadata.yml) and place in the `data/` directory
-* Create virtualenv: `virtualenv .venv`
-* Enable virtualenv: `source .venv/bin/activate`
-* Copy `.env.example` to `.env`
-* Pip install: `pip install -r requirements.txt`
-* Run `python ingestor/ingest.py`
+* Download [wm_with_flattened_interventions_metadata.yml](https://github.com/WorldModelers/Ontologies/blob/master/wm_with_flattened_interventions_metadata.yml) and place in the `data/` directory
+* Create a data volume `docker volume create --name wmcr-data-volume`
+* Mount the data volume to a dummy container: `docker container create --name dummy -v wmcr-data-volume:/root hello-world`
+* CD into the `data/` folder and copy its contents into the volume: `docker cp -L . dummy:/root`
+* Remove the dummy container: `docker rm dummy`
+
+## 4. Docker Setup for App
+* Ensure you've setup the data volume
+* Build the container: `docker build -f Dockerfile.flask -t wmcr-service:latest .`
+* Run the container: `docker run --name wmcr-service --network=wmcr-network --mount source=wmcr-data-volume,target=/app/data/ -p 5000:5000 -it wmcr-service:latest`
+
+## 5. Docker Setup for Ingest
+* Ensure you've setup the data volume
+* Build the container: `docker build -f Dockerfile.ingest -t wmcr-ingest:latest .`
+* Run the container: `docker run --name wmcr-ingest --network=wmcr-network --mount source=wmcr-data-volume,target=/app/data/ -it wmcr-ingest:latest` 
 
 ### Verify Ingest 
 Make sure that a factor at random has the expected document structure
@@ -35,13 +58,6 @@ curl -X GET "localhost:9200/curation_recommendation_kb_indra-48db558a-8fcb-11ea-
 }
 '
 ```
-
-# Run App
-* Ensure ingestion has finished
-* Enable virtualenv: `source .venv/bin/activate`
-* Copy `.env.example` to `.env`
-* Pip install: `pip install -r requirements.txt`
-* Run: `python -m flask run` in the root folder
 
 # Run Linting
 You can run linting using: `flake8 --exclude .venv,.vscode,__pycache__,data .`
@@ -128,13 +144,3 @@ Two things pop out:
       147    0.002    0.000   23.730    0.161 compute_and_update_clusters.py:23(_update)
   1531/22    0.004    0.000   22.438    1.020 compiler_lock.py:29(_acquire_compile_lock)
 ```
-
-# Docker Setup (Outdated)
-* Or you can run it in a docker using:
-  * Create a data volume `docker volume create --name wmcr-data-volume`
-  * Mount the data volume to a dummy container: `docker container create --name dummy -v wmcr-data-volume:/root hello-world`
-  * Cd into the `data` direction and copy the data folder into the volume: `docker cp -L data/ dummy:/root`
-  * Remove the dummy container: `docker rm dummy`
-  * Build the container: `docker build -t wmcr:latest .`
-  * `docker run --name wmcr --mount source=wmcr-data-volume,target=/app/data/ -p 5000:5000 -it wmcr:latest`
-  * To enter the docker container: `docker run -it --entrypoint=/bin/bash wmcr:latest -i`
