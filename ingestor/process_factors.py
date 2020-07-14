@@ -9,7 +9,7 @@ def process():
 
     # Get ES Record cursor
     data = es_client.search(
-        index=os.getenv('INCOMING_KB_INDEX_NAME'),
+        index=os.getenv('KB_INDEX_NAME'),
         size=10000,
         scroll='5m',
         body={
@@ -36,30 +36,45 @@ def process():
         sid = data['_scroll_id']
         scroll_size = len(data['hits']['hits'])
 
-    es_client.indices.refresh(index=es_service.get_curation_kb_index_name(os.getenv('INCOMING_KB_INDEX_NAME')))
+    es_client.indices.refresh(index=es_service.get_factor_index_name(os.getenv('KB_INDEX_NAME')))
     es_client.clear_scroll(scroll_id=sid)
 
 
 def _process_statements_into_factors(statements):
     for statement in statements:
-        statement_id = statement['_source']['id']  # FIXME: Should this be id or indra_id?
-        yield _build_factor(statement['_source']['subj'], 'subj', statement_id)
-        yield _build_factor(statement['_source']['obj'], 'obj', statement_id)
+        yield _build_factor(statement['_source']['subj'], 'subj')
+        yield _build_factor(statement['_source']['obj'], 'obj')
 
 
-def _build_factor(factor, factor_type, statement_id):
-    factor_text_cleaned = embedding_service.clean(factor['factor'])
-    # TODO: concept candidates
+"""
+It is possible that the cleaned versions of different factor texts are the same. 
+For example, "The conflict" and "A conflict" will both result in "conflict" after they've been processed.
+
+It is also possible that the knowledgebase contains multiple factors that are the same.
+For example, there might be a statement {subj_factor: A famine, obj_factor: food scarcity}, and a statement {subj_factor: low rainfall, obj_factor: A famine}
+If we blindly index each factor we will have duplicate documents, which down the line may cause unexpected results. 
+
+Elasticsearch doesn't have the concept of a unique field. Therefore, to ensure that there is only one document per unprocessed factor text, 
+the id is calculated using a hash function with the key as the original unprocessed factor text.
+"""
+
+
+def _build_factor(factor, factor_type):  # TODO: Rename factor variable?
+    factor_text_original = factor['factor']
+    factor_text_cleaned = embedding_service.clean(factor_text_original)
+    if factor_text_cleaned == "":
+        print("factor text clean was empty")
+
     return {
         '_op_type': 'index',
-        '_index': es_service.get_curation_kb_index_name(os.getenv('INCOMING_KB_INDEX_NAME')),
+        '_index': es_service.get_factor_index_name(os.getenv('KB_INDEX_NAME')),
+        '_id': hash(factor_text_original),  # TODO: This could be made more resilient by using something that's consistent across python runs?
         '_source': {
+            # TODO: Compute an ID using a hash function with factor_text_original as the value
             'factor_vector_300_d': embedding_service.compute_normalized_vector(factor_text_cleaned).tolist(),
-            'concept': factor['concept'],
-            'type': factor_type,
-            'polarity': factor['polarity'],
-            'statement_id': statement_id,
-            'factor_cleaned': factor_text_cleaned,
-            'factor_vector_2_d': []
+            'factor_vector_20_d': [],  # TODO: Does this need to be initialized as empty
+            'factor_vector_2_d': [],  # TODO: Does this need to be initialized as empty
+            'factor_text_cleaned': factor_text_cleaned,
+            'factor_text_original': factor_text_original
         }
     }

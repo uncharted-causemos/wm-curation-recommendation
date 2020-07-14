@@ -35,8 +35,8 @@ def get_curation_project_index_name(project_id):
     return 'curation_recomendations_project_' + project_id
 
 
-def get_curation_kb_index_name(kb_id):
-    return 'curation_recommendation_kb_' + kb_id
+def get_factor_index_name(kb_id):
+    return 'factors_' + kb_id
 
 
 _init_client()
