@@ -42,8 +42,8 @@ def process():
 
 def _process_statements_into_factors(statements):
     for statement in statements:
-        yield _build_factor(statement['_source']['subj'], 'subj')
-        yield _build_factor(statement['_source']['obj'], 'obj')
+        yield _build_factor(statement['_source']['subj']['factor'])
+        yield _build_factor(statement['_source']['obj']['factor'])
 
 
 """
@@ -59,12 +59,8 @@ the id is calculated using a hash function with the key as the original unproces
 """
 
 
-def _build_factor(factor, factor_type):  # TODO: Rename factor variable?
-    factor_text_original = factor['factor']
+def _build_factor(factor_text_original):
     factor_text_cleaned = embedding_service.clean(factor_text_original)
-    if factor_text_cleaned == "":
-        print("factor text clean was empty")
-
     return {
         '_op_type': 'index',
         '_index': es_service.get_factor_index_name(os.getenv('KB_INDEX_NAME')),
