@@ -35,6 +35,7 @@ def _update_factors(factors, factor_vectors_x_d, dim):
     es_client = es_service.get_client()
     print(f'Updating factors with {dim} dimensional vectors.')
     bulk(es_client, _build_factor_update(factors, factor_vectors_x_d, dim))
+    es_service.get_client().indices.refresh(index=es_service.get_factor_index_name(os.getenv('KB_INDEX_NAME')))
     print(f'Finished updating factors with {dim} dimensional vectors.')
 
 
