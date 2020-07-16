@@ -11,7 +11,7 @@ def process():
     data = es_client.search(
         index=os.getenv('KB_INDEX_NAME'),
         size=10000,
-        scroll='5m',
+        scroll='10m',
         body={
             'query': {
                 'match_all': {}
@@ -32,7 +32,7 @@ def process():
 
         total_documents_processed = total_documents_processed + scroll_size
 
-        data = es_client.scroll(scroll_id=sid, scroll='2m')
+        data = es_client.scroll(scroll_id=sid, scroll='10m')
         sid = data['_scroll_id']
         scroll_size = len(data['hits']['hits'])
 
