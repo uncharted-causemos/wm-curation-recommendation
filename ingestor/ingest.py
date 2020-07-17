@@ -21,6 +21,7 @@ from services import es_service
 es_setup.setup_factor_index()
 
 process_factors.process()
-compute_umap.compute_and_update(dim_start=300, dim_end=20)
-compute_clusters.compute_and_update(dim=20)
-compute_umap.compute_and_update(dim_start=20, dim_end=2)
+# TODO: Confirm parameters are correct
+compute_umap.compute_and_update(dim_start=300, dim_end=20, min_dist=0.01)
+compute_clusters.compute_and_update(dim=20, min_cluster_size=15, min_samples=8, cluster_selection_epsilon=0.01)
+compute_umap.compute_and_update(dim_start=20, dim_end=2, min_dist=0.01)

@@ -5,9 +5,9 @@ from services import dimension_reduction_service, es_service, utils
 import numpy as np
 
 
-def compute_and_update(dim_start, dim_end):
+def compute_and_update(dim_start, dim_end, min_dist):
     factors = _get_all_factors(dim_start)
-    factor_vectors_x_d = _compute_umap(factors, dim_end)
+    factor_vectors_x_d = _compute_umap(factors, dim_end, min_dist)
     _update_factors(factors, factor_vectors_x_d, dim_end)
 
 
@@ -17,11 +17,11 @@ def _get_all_factors(dim):
     return factors
 
 
-def _compute_umap(factors, dim):
+def _compute_umap(factors, dim, min_dist):
     print('Computing umap for all concepts and factors.')
     factor_vector_matrix = utils.build_factor_vector_matrix(factors)
 
-    mapper = dimension_reduction_service.fit(factor_vector_matrix, n_components=dim)
+    mapper = dimension_reduction_service.fit(factor_vector_matrix, n_components=dim, min_dist=min_dist)
     factor_vectors_x_d = dimension_reduction_service.transform(mapper, factor_vector_matrix)  # TODO: Save the mapper on disk somewhere?
 
     if len(factors) != len(factor_vectors_x_d):

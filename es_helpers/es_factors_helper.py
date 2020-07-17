@@ -5,9 +5,6 @@ _factor_index_mapping = {
     'properties': {
         'factor_text_original': {'type': 'keyword'},
         'factor_text_cleaned': {'type': 'keyword'},
-        # 'factor_vector_300_d': {'type': 'float'},  # TODO: Not sure if it's possible to define an array like this
-        # 'factor_vector_20_d': {'type': 'float'},  # TODO: Not sure if it's possible to define an array like this
-        # 'factor_vector_2d': {'type': 'float'},  # TODO: Not sure if it's possible to define an array like this
         'cluster_id': {'type': 'integer'}
     }
 }

@@ -4,9 +4,9 @@ from elasticsearch.helpers import bulk
 import os
 
 
-def compute_and_update(dim):
+def compute_and_update(dim, min_cluster_size, min_samples, cluster_selection_epsilon):
     factors = _get_all_factors(dim)
-    cluster_ids = _compute_clusters(factors, dim)
+    cluster_ids = _compute_clusters(factors, dim, min_cluster_size, min_samples, cluster_selection_epsilon)
     factors = _assign_cluster_ids_to_factors(factors, cluster_ids)
     _update(factors)
 
@@ -17,9 +17,9 @@ def _get_all_factors(dim):
     return factors
 
 
-def _compute_clusters(factor_vectors, dim):
+def _compute_clusters(factor_vectors, dim, min_cluster_size, min_samples, cluster_selection_epsilon):
     factor_vector_matrix = utils.build_factor_vector_matrix(factor_vectors)
-    return clustering_service.compute_clusters(factor_vector_matrix)
+    return clustering_service.compute_clusters(factor_vector_matrix, min_cluster_size, min_samples, cluster_selection_epsilon)
 
 
 def _assign_cluster_ids_to_factors(factors, cluster_ids):

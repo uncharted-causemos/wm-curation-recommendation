@@ -12,6 +12,7 @@ def process():
         index=os.getenv('KB_INDEX_NAME'),
         size=10000,
         scroll='10m',
+        _source_includes=['subj.factor', 'obj.factor'],
         body={
             'query': {
                 'match_all': {}
@@ -66,10 +67,9 @@ def _build_factor(factor_text_original):
         '_index': es_service.get_factor_index_name(os.getenv('KB_INDEX_NAME')),
         '_id': hash(factor_text_original),  # TODO: This could be made more resilient by using something that's consistent across python runs?
         '_source': {
-            # TODO: Compute an ID using a hash function with factor_text_original as the value
             'factor_vector_300_d': embedding_service.compute_normalized_vector(factor_text_cleaned).tolist(),
-            'factor_vector_20_d': [],  # TODO: Does this need to be initialized as empty
-            'factor_vector_2_d': [],  # TODO: Does this need to be initialized as empty
+            'factor_vector_20_d': [],
+            'factor_vector_2_d': [],
             'factor_text_cleaned': factor_text_cleaned,
             'factor_text_original': factor_text_original
         }
