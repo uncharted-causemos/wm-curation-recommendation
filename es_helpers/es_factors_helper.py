@@ -18,32 +18,23 @@ def get_kb_index_mapping():
     return _factor_index_mapping
 
 
-def get_project_index_mapping():
-    return _factor_index_mapping
-
-
-def get_all_factor_vectors(factor_index_name, dim):
-    print('Fetching all factor vectors.')
+def map_factor_vector(factors, dim):
     factor_vector_field_name = get_factor_vector_field_name(dim)
-    es_factors = get_all_factors(
-        factor_index_name=factor_index_name,
-        source_fields=[factor_vector_field_name]
-    )
-    mapped_factors = _map_es_factors(es_factors, factor_vector_field_name)
-    print('Finished fetching all factor vectors.')
-    return mapped_factors
 
+    def _map(factor):
+        factor['factor_vector'] = factor[factor_vector_field_name]
+        return factor
 
-def _map_es_factors(es_factors, factor_vector_field_name):
-    def _map(es_factor_doc):
-        return {
-            'factor_vector': es_factor_doc['_source'][factor_vector_field_name],
-            'id': es_factor_doc['_id']
-        }
-    return list(map(_map, es_factors))
+    return list(map(_map, factors))
 
 
 def get_all_factors(factor_index_name, source_fields):
+
+    def _map_factor_source(factor_doc):
+        factor = factor_doc['_source']
+        factor['id'] = factor_doc['_id']
+        return factor
+
     es_client = es_service.get_client()
     data = es_client.search(
         index=factor_index_name,
@@ -70,7 +61,8 @@ def get_all_factors(factor_index_name, source_fields):
 
     es_client.clear_scroll(scroll_id=sid)
 
-    return factors
+    mapped_factors = list(map(_map_factor_source, factors))
+    return mapped_factors
 
 
 def get_factor(index_name, statement_id, factor_type):

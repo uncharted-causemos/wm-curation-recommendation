@@ -6,14 +6,17 @@ import numpy as np
 
 
 def compute_and_update(dim_start, dim_end, min_dist):
-    factors = _get_all_factors(dim_start)
-    factor_vectors_x_d = _compute_umap(factors, dim_end, min_dist)
-    _update_factors(factors, factor_vectors_x_d, dim_end)
+    deduped_factors = _get_all_factors(dim_start)
+    factor_vectors_x_d = _compute_umap(deduped_factors, dim_end, min_dist)
+    _update_factors(deduped_factors, factor_vectors_x_d, dim_end)
 
 
 def _get_all_factors(dim):
     factor_index_name = es_service.get_factor_index_name(os.getenv('KB_INDEX_NAME'))
-    factors = es_factors_helper.get_all_factor_vectors(factor_index_name, dim)
+    factor_vector_field_name = es_factors_helper.get_factor_vector_field_name(dim)
+    factors = es_factors_helper.get_all_factors(factor_index_name, source_fields=['factor_text_cleaned', factor_vector_field_name])
+    factors = es_factors_helper.map_factor_vector(factors, dim)
+    factors = utils.dedupe_factors(factors, 'factor_text_cleaned')
     return factors
 
 
@@ -31,22 +34,23 @@ def _compute_umap(factors, dim, min_dist):
     return factor_vectors_x_d
 
 
-def _update_factors(factors, factor_vectors_x_d, dim):
+def _update_factors(deduped_factors, factor_vectors_x_d, dim):
     es_client = es_service.get_client()
     print(f'Updating factors with {dim} dimensional vectors.')
-    bulk(es_client, _build_factor_update(factors, factor_vectors_x_d, dim))
+    bulk(es_client, _build_factor_update(deduped_factors, factor_vectors_x_d, dim))
     es_service.get_client().indices.refresh(index=es_service.get_factor_index_name(os.getenv('KB_INDEX_NAME')))
     print(f'Finished updating factors with {dim} dimensional vectors.')
 
 
-def _build_factor_update(factors, factor_vectors_x_d, dim):
+def _build_factor_update(deduped_factors, factor_vectors_x_d, dim):
     factor_vector_field_name = es_factors_helper.get_factor_vector_field_name(dim)
-    for idx, f in enumerate(factors):
-        factor_update = {
-            '_op_type': 'update',
-            '_index': es_service.get_factor_index_name(os.getenv('KB_INDEX_NAME')),
-            '_id': f['id'],
-            'doc': {}
-        }
-        factor_update['doc'][factor_vector_field_name] = factor_vectors_x_d[idx].tolist()
-        yield factor_update
+    for idx, f in enumerate(deduped_factors):
+        for f_id in f['id']:
+            factor_update = {
+                '_op_type': 'update',
+                '_index': es_service.get_factor_index_name(os.getenv('KB_INDEX_NAME')),
+                '_id': f_id,
+                'doc': {}
+            }
+            factor_update['doc'][factor_vector_field_name] = factor_vectors_x_d[idx].tolist()
+            yield factor_update
