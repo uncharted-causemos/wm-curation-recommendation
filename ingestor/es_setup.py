@@ -1,6 +1,6 @@
 import os
 from services import es_service
-from es_helpers import es_factors_helper
+from helpers.es import es_factors_helper
 
 
 def setup_factor_index():

@@ -1,7 +1,8 @@
 import os
 from elasticsearch.helpers import bulk
-from es_helpers import es_factors_helper
-from services import dimension_reduction_service, es_service, utils
+from services import dimension_reduction_service, es_service
+from helpers.es import es_factors_helper
+from helpers import utils
 import numpy as np
 
 

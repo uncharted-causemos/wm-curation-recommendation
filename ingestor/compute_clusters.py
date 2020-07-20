@@ -1,5 +1,6 @@
-from services import clustering_service, es_service, utils
-from es_helpers import es_factors_helper
+from services import clustering_service, es_service
+from helpers.es import es_factors_helper
+from helpers import utils
 from elasticsearch.helpers import bulk
 import os
 

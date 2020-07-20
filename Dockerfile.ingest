@@ -3,7 +3,7 @@ FROM python:3.8-buster
 WORKDIR /app
 
 COPY ingestor/ ./ingestor
-COPY es_helpers ./es_helpers
+COPY helpers/es ./helpers/es
 COPY services ./services
 COPY .env ./
 COPY requirements.txt ./
