@@ -12,7 +12,9 @@ def _init_client():
         os.getenv('ES_HOST'),
         http_auth=('', ''),  # TODO LATER: add authentication
         scheme='http',
-        port=os.getenv('ES_PORT')
+        port=os.getenv('ES_PORT'),
+        timeout=60 * 10,
+        retry_on_timeout=True
     )
 
 
@@ -35,8 +37,8 @@ def get_curation_project_index_name(project_id):
     return 'curation_recomendations_project_' + project_id
 
 
-def get_curation_kb_index_name(kb_id):
-    return 'curation_recommendation_kb_' + kb_id
+def get_factor_index_name(kb_id):
+    return 'curation_recommendations_factors_' + kb_id
 
 
 _init_client()

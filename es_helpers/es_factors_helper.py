@@ -3,28 +3,41 @@ from services import es_service
 
 _factor_index_mapping = {
     'properties': {
-        'concept': {'type': 'keyword'},
-        'type': {'type': 'keyword'},
-        'factor_cleaned': {'type': 'keyword'},
-        'statement_id': {'type': 'keyword'},
-        'cluster_id': {'type': 'integer'},
-        'polarity': {'type': 'integer'}
+        'factor_text_original': {'type': 'keyword'},
+        'factor_text_cleaned': {'type': 'keyword'},
+        'cluster_id': {'type': 'integer'}
     }
 }
+
+
+def get_factor_vector_field_name(dim):
+    return f'factor_vector_{dim}_d'
 
 
 def get_kb_index_mapping():
     return _factor_index_mapping
 
 
-def get_project_index_mapping():
-    return _factor_index_mapping
+def map_factor_vector(factors, dim):
+    factor_vector_field_name = get_factor_vector_field_name(dim)
+
+    def _map(factor):
+        factor['factor_vector'] = factor[factor_vector_field_name]
+        return factor
+
+    return list(map(_map, factors))
 
 
-def get_all_factors(index_name, source_fields):
+def get_all_factors(factor_index_name, source_fields):
+
+    def _map_factor_source(factor_doc):
+        factor = factor_doc['_source']
+        factor['id'] = factor_doc['_id']
+        return factor
+
     es_client = es_service.get_client()
     data = es_client.search(
-        index=index_name,
+        index=factor_index_name,
         size=10000,
         scroll='2m',
         _source_includes=source_fields,
@@ -48,7 +61,8 @@ def get_all_factors(index_name, source_fields):
 
     es_client.clear_scroll(scroll_id=sid)
 
-    return factors
+    mapped_factors = list(map(_map_factor_source, factors))
+    return mapped_factors
 
 
 def get_factor(index_name, statement_id, factor_type):

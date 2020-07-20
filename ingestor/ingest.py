@@ -13,16 +13,15 @@ sys.path.insert(1, str(app_root_path.resolve()))
 load_dotenv(find_dotenv())
 
 import process_factors
-import process_concepts
-import compute_and_update_umap
-import compute_and_update_clusters
+import compute_umap
+import compute_clusters
 import es_setup
+from services import es_service
 
-es_setup.setup_outgoing_kb_index()
-es_setup.setup_concept_index()
-es_setup.setup_recommendation_decisions_index()
+es_setup.setup_factor_index()
 
 process_factors.process()
-process_concepts.process()
-compute_and_update_umap.compute_and_update()
-compute_and_update_clusters.compute_and_update()
+# TODO: Confirm parameters are correct
+compute_umap.compute_and_update(dim_start=300, dim_end=20, min_dist=0.01)
+compute_clusters.compute_and_update(dim=20, min_cluster_size=15, min_samples=8, cluster_selection_epsilon=0.01)
+compute_umap.compute_and_update(dim_start=20, dim_end=2, min_dist=0.01)
