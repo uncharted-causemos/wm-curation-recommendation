@@ -17,10 +17,9 @@ def get_recommendations():
     project_index_name = body['project_name']
     kb_index_name = body['kb_name']
     factor_text_original = body['factor']
-    factor_text_cleaned = embedding_service.clean(factor_text_original)
 
     factor_doc = recommendations_helper.get_factor(factor_text_original, kb_index_name)
-    # FIXME: This should check if cluster_id is -1 I think so that we don't load recommend more noise?
+    # FIXME: This should check if cluster_id is -1 I think so that we don't recommend noise?
     factors_in_cluster = recommendations_helper.get_factors_in_cluster(factor_doc['cluster_id'], kb_index_name)
 
     knn = recommendations_helper.compute_knn(factor_doc, factors_in_cluster, num_nn=100)
