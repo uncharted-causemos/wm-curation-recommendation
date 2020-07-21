@@ -41,5 +41,9 @@ def get_factor_index_name(kb_id):
     return 'curation_recommendations_factors_' + kb_id
 
 
+def get_statement_index_name(kb_id):
+    return 'curation_recommendations_statements_' + kb_id
+
+
 _init_client()
 _init_tasks_client()

@@ -8,6 +8,12 @@ def build_factor_vector_matrix(factor_vectors):
     return factor_vector_matrix
 
 
+def build_statement_vector_matrix(statement_vectors):
+    statement_vector_matrix = np.array(list(map(lambda x: x['statement_vector'], statement_vectors)))
+    print('Statement vectors shape is: {}'.format(statement_vector_matrix.shape))
+    return statement_vector_matrix
+
+
 def dedupe_factors(factors, text_field_name):
     # TODO: Maybe worth moving away from pandas here in the future
     factor_df = pd.DataFrame(factors)
@@ -19,3 +25,16 @@ def dedupe_factors(factors, text_field_name):
     })
     deduped_factors = factor_df.to_dict(orient='records')
     return deduped_factors
+
+
+def dedupe_statements(statements, text_field_name):
+    # TODO: Maybe worth moving away from pandas here in the future
+    statement_df = pd.DataFrame(statements)
+    statement_df = statement_df[['id', 'statement_vector', text_field_name]]
+    statement_df['id'] = statement_df['id'].apply(lambda x: [x])
+    statement_df = statement_df.groupby(text_field_name).agg({
+        'id': 'sum',
+        'statement_vector': lambda x: x.iloc[0]
+    })
+    deduped_statements = statement_df.to_dict(orient='records')
+    return deduped_statements

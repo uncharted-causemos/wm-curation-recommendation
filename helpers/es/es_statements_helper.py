@@ -2,43 +2,43 @@ import os
 from services import es_service
 
 
-_factor_index_mapping = {
+_statement_index_mapping = {
     'properties': {
-        'factor_text_original': {'type': 'keyword'},
-        'factor_text_cleaned': {'type': 'keyword'},
+        'statement_text_original': {'type': 'keyword'},
+        'statement_text_cleaned': {'type': 'keyword'},
         'cluster_id': {'type': 'integer'}
     }
 }
 
 
-def get_factor_vector_field_name(dim):
-    return f'factor_vector_{dim}_d'
+def get_statement_vector_field_name(dim):
+    return f'statement_vector_{dim}_d'
 
 
-def get_factor_index_mapping():
-    return _factor_index_mapping
+def get_statement_index_mapping():
+    return _statement_index_mapping
 
 
-def map_factor_vector(factors, dim):
-    factor_vector_field_name = get_factor_vector_field_name(dim)
+def map_statement_vector(statements, dim):
+    statement_vector_field_name = get_statement_vector_field_name(dim)
 
-    def _map(factor):
-        factor['factor_vector'] = factor[factor_vector_field_name]
-        return factor
+    def _map(statement):
+        statement['statement_vector'] = statement[statement_vector_field_name]
+        return statement
 
-    return list(map(_map, factors))
+    return list(map(_map, statements))
 
 
-def get_all_factors(factor_index_name, source_fields):
+def get_all_statements(statement_index_name, source_fields):
 
-    def _map_factor_source(factor_doc):
-        factor = factor_doc['_source']
-        factor['id'] = factor_doc['_id']
-        return factor
+    def _map_statement_source(statement_doc):
+        statement = statement_doc['_source']
+        statement['id'] = statement_doc['_id']
+        return statement
 
     es_client = es_service.get_client()
     data = es_client.search(
-        index=factor_index_name,
+        index=statement_index_name,
         size=10000,
         scroll='2m',
         _source_includes=source_fields,
@@ -52,9 +52,9 @@ def get_all_factors(factor_index_name, source_fields):
     sid = data['_scroll_id']
     scroll_size = len(data['hits']['hits'])
 
-    factors = []
+    statements = []
     while scroll_size > 0:
-        factors = factors + data['hits']['hits']
+        statements = statements + data['hits']['hits']
 
         data = es_client.scroll(scroll_id=sid, scroll='2m')
         sid = data['_scroll_id']
@@ -62,14 +62,14 @@ def get_all_factors(factor_index_name, source_fields):
 
     es_client.clear_scroll(scroll_id=sid)
 
-    mapped_factors = list(map(_map_factor_source, factors))
-    return mapped_factors
+    mapped_statements = list(map(_map_statement_source, statements))
+    return mapped_statements
 
 
-def get_cluster_id(factor_index_name, factor_text_original):
+def get_cluster_id(statement_index_name, statement_text_original):
     es_client = es_service.get_client()
     data = es_client.search(
-        index=factor_index_name,
+        index=statement_index_name,
         size=1,
         scroll='5m',
         _source_includes=['cluster_id'],
@@ -77,7 +77,7 @@ def get_cluster_id(factor_index_name, factor_text_original):
             'query': {
                 'bool': {
                     'filter': [
-                        {'term': {'factor_text_original': factor_text_original}}
+                        {'term': {'statement_text_original': statement_text_original}}
                     ]
                 }
             }
@@ -91,21 +91,21 @@ def get_cluster_id(factor_index_name, factor_text_original):
     return docs[0]['_source']['cluster_id']
 
 
-def get_factors_in_same_cluster(factor_index_name, cluster_id, clustering_dim):
-    factor_vector_field_name = get_factor_vector_field_name(clustering_dim)
+def get_statements_in_same_cluster(statement_index_name, cluster_id, clustering_dim):
+    statement_vector_field_name = get_statement_vector_field_name(clustering_dim)
 
-    def _map_source(factor_doc):
-        factor = factor_doc['_source']
-        factor['factor_vector'] = factor[factor_vector_field_name]
-        factor.pop(factor_vector_field_name, None)
-        return factor
+    def _map_source(statement_doc):
+        statement = statement_doc['_source']
+        statement['statement_vector'] = statement[statement_vector_field_name]
+        statement.pop(statement_vector_field_name, None)
+        return statement
 
     es_client = es_service.get_client()
     data = es_client.search(
-        index=factor_index_name,
+        index=statement_index_name,
         size=10000,
         scroll='5m',
-        _source_includes=['factor_text_original', 'factor_text_cleaned', factor_vector_field_name],
+        _source_includes=['statement_text_original', 'statement_text_cleaned', statement_vector_field_name],
         body={
             'query': {
                 'bool': {
@@ -129,21 +129,21 @@ def get_factors_in_same_cluster(factor_index_name, cluster_id, clustering_dim):
         scroll_size = len(data['hits']['hits'])
 
     es_client.clear_scroll(scroll_id=sid)
-    print(f'Finished fetching all factors for cluster {cluster_id}')
+    print(f'Finished fetching all statements for cluster {cluster_id}')
     return results
 
 
-def get_factor(factor_index_name, factor_text_original):
+def get_statement(statement_index_name, statement_text_original):
     es_client = es_service.get_client()
     data = es_client.search(
-        index=factor_index_name,
+        index=statement_index_name,
         size=1,
         scroll='5m',
         body={
             'query': {
                 'bool': {
                     'filter': [
-                        {'term': {'factor_text_original': factor_text_original}}
+                        {'term': {'statement_text_original': statement_text_original}}
                     ]
                 }
             }
