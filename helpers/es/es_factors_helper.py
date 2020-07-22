@@ -1,4 +1,3 @@
-import os
 from services import es_service
 
 

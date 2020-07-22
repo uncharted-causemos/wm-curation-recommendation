@@ -1,12 +1,5 @@
-import os
 from flask import Blueprint, request, jsonify
-import numpy as np
-from sklearn.neighbors import KDTree
-from scipy.stats import entropy
-from services import embedding_service, es_service, ontology_service
-from helpers.es import es_factors_helper, es_kb_helper
 from helpers.api import recommendations_helper
-from helpers import utils
 
 regrounding_recommendations_api = Blueprint('regrounding_recommendations_api', __name__)
 
