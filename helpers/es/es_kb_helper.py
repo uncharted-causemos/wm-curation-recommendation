@@ -2,50 +2,6 @@ from services import es_service
 from functools import reduce
 
 
-def search_by_text_and_polarity(subj_factor_text_originals, obj_factor_text_originals, subj_polarity, obj_polarity, index_name):
-    es_client = es_service.get_client()
-
-    def _map_source(statement_doc):
-        return {
-            'subj': statement_doc['_source']['subj']['factor'],
-            'obj': statement_doc['_source']['obj']['factor']
-        }
-
-    data = es_client.search(
-        index=index_name,
-        size=10000,
-        scroll='5m',
-        _source_includes=['subj.factor', 'obj.factor'],
-        body={
-            'query': {
-                'bool': {
-                    'must': [
-                        {'term': {'subj.polarity': subj_polarity}},
-                        {'term': {'obj.polarity': obj_polarity}},
-                        {'terms': {'subj.factor': subj_factor_text_originals}},
-                        {'terms': {'obj.factor': obj_factor_text_originals}}
-                    ]
-                }
-            }
-        }
-    )
-
-    sid = data['_scroll_id']
-    scroll_size = len(data['hits']['hits'])
-
-    results = []
-    while scroll_size > 0:
-        results = results + list(map(_map_source, data['hits']['hits']))
-
-        data = es_client.scroll(scroll_id=sid, scroll='2m')
-        sid = data['_scroll_id']
-        scroll_size = len(data['hits']['hits'])
-
-    es_client.clear_scroll(scroll_id=sid)
-    print('Finished fetching statements filtered by polarity.')
-    return results
-
-
 def get_concept_candidates(factor_text_originals, kb_index_name):
     es_client = es_service.get_client()
 
