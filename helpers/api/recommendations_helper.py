@@ -35,13 +35,13 @@ def compute_knn(factor_doc, all_factors, num_nn):
     return knn
 
 
-def compute_kl_divergence(factor_doc, all_factors, kb_index_name, num_nn):
+def compute_kl_divergence(factor_doc, all_factors, project_index_name, num_nn):
     factor_text_originals = list(map(lambda x: x['factor_text_original'], all_factors))
 
-    factors_concept_candidates = es_kb_helper.get_concept_candidates(factor_text_originals, kb_index_name)
+    factors_concept_candidates = es_kb_helper.get_concept_candidates(factor_text_originals, project_index_name)
     factor_concept_candidate_distributions = np.array(list(map(_map_concept_candidates_to_distribution, factors_concept_candidates)))
 
-    factor_doc_concept_candidate = es_kb_helper.get_concept_candidates_for_factor(factor_doc['factor_text_original'], kb_index_name)
+    factor_doc_concept_candidate = es_kb_helper.get_concept_candidates_for_factor(factor_doc['factor_text_original'], project_index_name)
     factor_doc_concept_candidate_dist = np.array(_map_concept_candidates_to_distribution(factor_doc_concept_candidate))
 
     kl_divergence_scores = np.array([entropy(factor_doc_concept_candidate_dist, f_dist) for f_dist in factor_concept_candidate_distributions])

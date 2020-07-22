@@ -17,13 +17,14 @@ def get_recommendations():
     project_index_name = body['project_name']
     kb_index_name = body['kb_name']
     factor_text_original = body['factor']
+    num_recommendations = body['num_recommendations']
 
     factor_doc = recommendations_helper.get_factor(factor_text_original, kb_index_name)
     # FIXME: This should check if cluster_id is -1 I think so that we don't recommend noise?
     factors_in_cluster = recommendations_helper.get_factors_in_cluster(factor_doc['cluster_id'], kb_index_name)
 
-    knn = recommendations_helper.compute_knn(factor_doc, factors_in_cluster, num_nn=100)
-    kl_nn = recommendations_helper.compute_kl_divergence(factor_doc, factors_in_cluster, kb_index_name, num_nn=100)
+    knn = recommendations_helper.compute_knn(factor_doc, factors_in_cluster, num_nn=num_recommendations)
+    kl_nn = recommendations_helper.compute_kl_divergence(factor_doc, factors_in_cluster, project_index_name, num_nn=num_recommendations)
 
     recommended_factors = knn + kl_nn
 
