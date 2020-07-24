@@ -2,11 +2,32 @@ from services import es_service
 from functools import reduce
 
 
-def get_concept_candidates(factor_text_originals, kb_index_name):
+def get_concept_candidates_for_all_factors(factor_text_originals, kb_index_id):
+    results = _get_concept_candidates(factor_text_originals, kb_index_id)
+    results = list(map(_map_factor_source_to_concept_candidate, results))
+    deduped_results = _dedupe_on_factor_text_original(results)
+    return deduped_results
+
+
+def get_concept_candidates_for_factor(factor_text_original, kb_index_id):
+    def _reduce_candidates(factor_x, factor_y):
+        if len(factor_x['candidates']) < len(factor_y['candidates']):
+            return factor_y
+        else:
+            return factor_x
+
+    results = _get_concept_candidates([factor_text_original], kb_index_id)
+    results = list(map(_map_factor_source_to_concept_candidate, results))
+    result = reduce(_reduce_candidates, results)
+    print('Finished fetching concept candidates for factor.')
+    return result
+
+
+def _get_concept_candidates(factor_text_originals, kb_index_id):
     es_client = es_service.get_client()
 
     data = es_client.search(
-        index=kb_index_name,
+        index=kb_index_id,
         size=10000,
         scroll='5m',
         _source_includes=['subj.candidates', 'obj.candidates', 'subj.factor', 'obj.factor'],
@@ -27,7 +48,7 @@ def get_concept_candidates(factor_text_originals, kb_index_name):
 
     results = []
     while scroll_size > 0:
-        results = results + list(map(_map_factor_source_to_concept_candidate, data['hits']['hits']))
+        results = results + data['hits']['hits']
 
         data = es_client.scroll(scroll_id=sid, scroll='2m')
         sid = data['_scroll_id']
@@ -35,41 +56,7 @@ def get_concept_candidates(factor_text_originals, kb_index_name):
 
     es_client.clear_scroll(scroll_id=sid)
     print('Finished fetching concept candidates for list of factors')
-
-    deduped_results = _dedupe_on_factor_text_original(results)
-    return deduped_results
-
-
-def get_concept_candidates_for_factor(factor_text_original, kb_index_name):
-    es_client = es_service.get_client()
-
-    def _reduce_candidates(factor_x, factor_y):
-        if len(factor_x['candidates']) < len(factor_y['candidates']):
-            return factor_y
-        else:
-            return factor_x
-
-    data = es_client.search(
-        index=kb_index_name,
-        size=10000,
-        scroll='5m',
-        _source_includes=['subj.candidates', 'obj.candidates', 'subj.factor', 'obj.factor'],
-        body={
-            'query': {
-                'bool': {
-                    'should': [
-                        {'terms': {'subj.factor': [factor_text_original], '_name': 'subj'}},
-                        {'terms': {'obj.factor': [factor_text_original], '_name': 'obj'}}
-                    ]
-                }
-            }
-        }
-    )
-
-    results = list(map(_map_factor_source_to_concept_candidate, data['hits']['hits']))
-    result = reduce(_reduce_candidates, results)
-    print('Finished fetching concept candidates for factor.')
-    return result
+    return results
 
 
 def _dedupe_on_factor_text_original(factors):

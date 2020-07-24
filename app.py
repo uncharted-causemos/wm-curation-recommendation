@@ -2,7 +2,7 @@ from flask import Flask
 from dotenv import load_dotenv, find_dotenv
 
 # Load env before loading app specific files
-load_dotenv(find_dotenv())
+load_dotenv(find_dotenv(), override=True)
 
 from api.health_check import health_check_api
 from api.regrounding_recommendations import regrounding_recommendations_api

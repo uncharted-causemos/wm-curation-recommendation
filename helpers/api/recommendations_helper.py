@@ -7,8 +7,8 @@ from scipy.stats import entropy
 import numpy as np
 
 
-def get_factor(factor_text_original, kb_index_name):
-    factor_index_name = es_service.get_factor_index_name(kb_index_name)
+def get_factor(factor_text_original, kb_index_id):
+    factor_index_name = es_service.get_factor_index_name(kb_index_id)
     factor_doc = es_factors_helper.get_factor(factor_index_name, factor_text_original)
 
     clustering_dim = os.getenv('CLUSTERING_DIM')
@@ -18,9 +18,9 @@ def get_factor(factor_text_original, kb_index_name):
     return factor_doc
 
 
-def get_factors_in_cluster(cluster_id, kb_index_name):
+def get_factors_in_cluster(cluster_id, kb_index_id):
     clustering_dim = os.getenv('CLUSTERING_DIM')
-    factor_index_name = es_service.get_factor_index_name(kb_index_name)
+    factor_index_name = es_service.get_factor_index_name(kb_index_id)
     factors_in_cluster = es_factors_helper.get_factors_in_same_cluster(factor_index_name, cluster_id, clustering_dim)
     return factors_in_cluster
 
@@ -30,26 +30,24 @@ def compute_knn(factor_doc, all_factors, num_nn):
     factor_vector_field_name = es_factors_helper.get_factor_vector_field_name(clustering_dim)
     factor_vector_matrix = utils.build_factor_vector_matrix(all_factors)
     kd_tree = KDTree(factor_vector_matrix, leaf_size=2)
-    distances, indices = kd_tree.query(np.array(factor_doc[factor_vector_field_name]).reshape(1, -1), min(num_nn, factor_vector_matrix.shape[0]))
-    knn = list(map(lambda d, i: {'score': d, 'factor': all_factors[i]['factor_text_original']}, distances.flatten().tolist(), indices.flatten().tolist()))
+    distances, sorted_indices = kd_tree.query(np.array(factor_doc[factor_vector_field_name]).reshape(1, -1), min(num_nn, factor_vector_matrix.shape[0]))
+    knn = list(map(lambda i: {'factor': all_factors[i]['factor_text_original']}, sorted_indices.flatten().tolist()))
     return knn
 
 
-def compute_kl_divergence(factor_doc, all_factors, project_index_name, num_nn):
+def compute_kl_divergence(factor_doc, all_factors, project_index_id, num_nn):
     factor_text_originals = list(map(lambda x: x['factor_text_original'], all_factors))
 
-    factors_concept_candidates = es_kb_helper.get_concept_candidates(factor_text_originals, project_index_name)
+    factors_concept_candidates = es_kb_helper.get_concept_candidates_for_all_factors(factor_text_originals, project_index_id)
     factor_concept_candidate_distributions = np.array(list(map(_map_concept_candidates_to_distribution, factors_concept_candidates)))
 
-    factor_doc_concept_candidate = es_kb_helper.get_concept_candidates_for_factor(factor_doc['factor_text_original'], project_index_name)
+    factor_doc_concept_candidate = es_kb_helper.get_concept_candidates_for_factor(factor_doc['factor_text_original'], project_index_id)
     factor_doc_concept_candidate_dist = np.array(_map_concept_candidates_to_distribution(factor_doc_concept_candidate))
 
     kl_divergence_scores = np.array([entropy(factor_doc_concept_candidate_dist, f_dist) for f_dist in factor_concept_candidate_distributions])
     sorted_indices = np.argsort(kl_divergence_scores)
     lowest_kl_divergence_factors = np.array(factors_concept_candidates)[sorted_indices[:num_nn]]
-    lowest_kl_divergence_scores = kl_divergence_scores[sorted_indices[:num_nn]]
-    kl_nn = list(map(lambda kl_score, factor: {'score': kl_score, 'factor': factor['factor_text_original']},
-                     lowest_kl_divergence_scores.flatten().tolist(),
+    kl_nn = list(map(lambda factor: {'factor': factor['factor_text_original']},
                      lowest_kl_divergence_factors.flatten().tolist()))
     return kl_nn
 

@@ -7,12 +7,12 @@ regrounding_recommendations_api = Blueprint('regrounding_recommendations_api', _
 @regrounding_recommendations_api.route('/', methods=['POST'])
 def get_recommendations():
     body = request.get_json()
-    project_index_name = body['project_name']
-    kb_index_name = body['kb_name']
+    project_index_id = body['project_id']
+    kb_index_id = body['kb_id']
     factor_text_original = body['factor']
     num_recommendations = body['num_recommendations']
 
-    factor_doc = recommendations_helper.get_factor(factor_text_original, kb_index_name)
+    factor_doc = recommendations_helper.get_factor(factor_text_original, kb_index_id)
 
     if factor_doc['cluster_id'] == -1:
         response = {
@@ -20,9 +20,9 @@ def get_recommendations():
         }
         return jsonify(response)
 
-    factors_in_cluster = recommendations_helper.get_factors_in_cluster(factor_doc['cluster_id'], kb_index_name)
+    factors_in_cluster = recommendations_helper.get_factors_in_cluster(factor_doc['cluster_id'], kb_index_id)
     knn = recommendations_helper.compute_knn(factor_doc, factors_in_cluster, num_nn=num_recommendations)
-    kl_nn = recommendations_helper.compute_kl_divergence(factor_doc, factors_in_cluster, project_index_name, num_nn=num_recommendations)
+    kl_nn = recommendations_helper.compute_kl_divergence(factor_doc, factors_in_cluster, project_index_id, num_nn=num_recommendations)
 
     recommended_factors = knn + kl_nn
     response = {
