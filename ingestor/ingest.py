@@ -10,25 +10,53 @@ app_root_path = Path(script_dir) / '../'
 sys.path.insert(1, str(app_root_path.resolve()))
 
 # Load env
-load_dotenv(find_dotenv())
+load_dotenv(find_dotenv(), override=True)
 
 from ingestor import process_kb
 from ingestor import compute_umap
 from ingestor import compute_clusters
 from ingestor import es_setup
+from helpers.es import es_recommendations_helper
 
-# FIXME: Read kb_index_name here in order to make it easier to move towarda an API endpoint
+# TODO: Read these in from args
+kb_index_id = os.getenv('KB_INDEX_NAME')
+delete_factor_reco_index_if_exists = os.getenv('DELETE_FACTOR_RECOMMENDATION_INDEX_IF_EXISTS')
+delete_statement_reco_index_if_exists = os.getenv('DELETE_STATEMENT_RECOMMENDATION_INDEX_IF_EXISTS')
+factor_reco_index_id = es_recommendations_helper.get_factor_recommendation_index_name(kb_index_id)
+statement_reco_index_id = es_recommendations_helper.get_statement_recommendation_index_name(kb_index_id)
 
-es_setup.setup_recommendation_index()
-process_kb.process()
+es_setup.setup_recommendation_indices(factor_reco_index_id,
+                                      statement_reco_index_id,
+                                      delete_factor_reco_index_if_exists,
+                                      delete_statement_reco_index_if_exists)
+process_kb.process(kb_index_id, factor_reco_index_id, statement_reco_index_id)
 
 # TODO: Confirm parameters are correct
-compute_umap.compute_and_update(dim_start=300, dim_end=20, min_dist=0.01, entity_type='factor')
-compute_clusters.compute_and_update(dim=20, min_cluster_size=15, min_samples=8, cluster_selection_epsilon=0.01, entity_type='factor')
-compute_umap.compute_and_update(dim_start=20, dim_end=2, min_dist=0.01, entity_type='factor')
+compute_umap.compute_and_update(dim_start=300,
+                                dim_end=20,
+                                min_dist=0.01,
+                                reco_index_id=factor_reco_index_id)
+compute_clusters.compute_and_update(dim=20,
+                                    min_cluster_size=15,
+                                    min_samples=8,
+                                    cluster_selection_epsilon=0.01,
+                                    reco_index_id=factor_reco_index_id)
+compute_umap.compute_and_update(dim_start=20,
+                                dim_end=2,
+                                min_dist=0.01,
+                                reco_index_id=factor_reco_index_id)
 
 
-# TODO: Confirm parameters are correct
-compute_umap.compute_and_update(dim_start=300, dim_end=20, min_dist=0.01, entity_type='statement')
-compute_clusters.compute_and_update(dim=20, min_cluster_size=15, min_samples=8, cluster_selection_epsilon=0.01, entity_type='statement')
-compute_umap.compute_and_update(dim_start=20, dim_end=2, min_dist=0.01, entity_type='statement')
+compute_umap.compute_and_update(dim_start=300,
+                                dim_end=20,
+                                min_dist=0.01,
+                                reco_index_id=statement_reco_index_id)
+compute_clusters.compute_and_update(dim=20,
+                                    min_cluster_size=15,
+                                    min_samples=8,
+                                    cluster_selection_epsilon=0.01,
+                                    reco_index_id=statement_reco_index_id)
+compute_umap.compute_and_update(dim_start=20,
+                                dim_end=2,
+                                min_dist=0.01,
+                                reco_index_id=statement_reco_index_id)

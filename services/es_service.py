@@ -33,9 +33,5 @@ def get_tasks_client():
     return _tasks_client
 
 
-def get_recommendation_index_name(kb_id):
-    return 'curation_recommendations_' + kb_id
-
-
 _init_client()
 _init_tasks_client()

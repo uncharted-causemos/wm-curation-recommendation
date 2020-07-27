@@ -1,12 +1,21 @@
 from services import es_service
 
 
-_recommendation_index_mapping = {
+_factor_recommendation_index_mapping = {
     'properties': {
         'text_original': {'type': 'keyword'},
         'text_cleaned': {'type': 'keyword'},
-        'cluster_id': {'type': 'integer'},
-        'entity_type': {'type': 'keyword'}
+        'cluster_id': {'type': 'integer'}
+    }
+}
+
+_statement_recommendation_index_mapping = {
+    'properties': {
+        'text_original': {'type': 'keyword'},
+        'text_cleaned': {'type': 'keyword'},
+        'subj_factor': {'type': 'keyword'},
+        'obj_factor': {'type': 'keyword'},
+        'cluster_id': {'type': 'integer'}
     }
 }
 
@@ -15,8 +24,20 @@ def get_vector_field_name(dim):
     return f'vector_{dim}_d'
 
 
-def get_recommendation_index_mapping():
-    return _recommendation_index_mapping
+def get_factor_recommendation_index_mapping():
+    return _factor_recommendation_index_mapping
+
+
+def get_statement_recommendation_index_mapping():
+    return _factor_recommendation_index_mapping
+
+
+def get_factor_recommendation_index_name(kb_id):
+    return 'curation_factor_recommendations_' + kb_id
+
+
+def get_statement_recommendation_index_name(kb_id):
+    return 'curation_statement_recommendations_' + kb_id
 
 
 def map_vector(recommendations, dim):
@@ -29,7 +50,7 @@ def map_vector(recommendations, dim):
     return list(map(_map, recommendations))
 
 
-def get_all_recommendations(recommendation_index_name, source_fields, entity_type):
+def get_all_recommendations(recommendation_index_name, source_fields):
 
     def _map_reco_source(reco_doc):
         reco = reco_doc['_source']
@@ -44,11 +65,7 @@ def get_all_recommendations(recommendation_index_name, source_fields, entity_typ
         _source_includes=source_fields,
         body={
             'query': {
-                'bool': {
-                    'filter': [
-                        {'term': {'entity_type': entity_type}}
-                    ]
-                }
+                'match_all': {}
             }
         }
     )
