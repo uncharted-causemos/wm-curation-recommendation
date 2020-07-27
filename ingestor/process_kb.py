@@ -10,7 +10,7 @@ def process(kb_index_name, factor_reco_index_id, statement_reco_index_id):
     # Get ES Record cursor
     data = es_client.search(
         index=kb_index_name,
-        size=100,
+        size=10000,
         scroll='10m',
         _source_includes=['subj.factor', 'obj.factor'],
         body={
@@ -20,28 +20,26 @@ def process(kb_index_name, factor_reco_index_id, statement_reco_index_id):
         }
     )
 
-    # sid = data['_scroll_id']
-    # scroll_size = len(data['hits']['hits'])
+    sid = data['_scroll_id']
+    scroll_size = len(data['hits']['hits'])
 
-    # total_documents_processed = 0
+    total_documents_processed = 0
 
-    # # Iterate over all documents
-    # while scroll_size > 0:
-    #     print(f'Processing statements from {total_documents_processed} to {total_documents_processed + scroll_size}')
-    #     # TODO: Log failed entries
-    #     deque(parallel_bulk(es_client, _process_statements(data['hits']['hits'], factor_reco_index_id, statement_reco_index_id)), maxlen=0)
+    # Iterate over all documents
+    while scroll_size > 0:
+        print(f'Processing statements from {total_documents_processed} to {total_documents_processed + scroll_size}')
+        # TODO: Log failed entries
+        deque(parallel_bulk(es_client, _process_statements(data['hits']['hits'], factor_reco_index_id, statement_reco_index_id)), maxlen=0)
 
-    #     total_documents_processed = total_documents_processed + scroll_size
+        total_documents_processed = total_documents_processed + scroll_size
 
-    #     data = es_client.scroll(scroll_id=sid, scroll='10m')
-    #     sid = data['_scroll_id']
-    #     scroll_size = len(data['hits']['hits'])
-
-    deque(parallel_bulk(es_client, _process_statements(data['hits']['hits'], factor_reco_index_id, statement_reco_index_id)), maxlen=0)
+        data = es_client.scroll(scroll_id=sid, scroll='10m')
+        sid = data['_scroll_id']
+        scroll_size = len(data['hits']['hits'])
 
     es_client.indices.refresh(index=factor_reco_index_id)
     es_client.indices.refresh(index=statement_reco_index_id)
-    # es_client.clear_scroll(scroll_id=sid)
+    es_client.clear_scroll(scroll_id=sid)
 
 
 def _process_statements(statements, factor_reco_index_id, statement_reco_index_id):
