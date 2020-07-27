@@ -33,16 +33,8 @@ def get_tasks_client():
     return _tasks_client
 
 
-def get_curation_project_index_name(project_id):
-    return 'curation_recomendations_project_' + project_id
-
-
-def get_factor_index_name(kb_id):
-    return 'curation_recommendations_factors_' + kb_id
-
-
-def get_statement_index_name(kb_id):
-    return 'curation_recommendations_statements_' + kb_id
+def get_recommendation_index_name(kb_id):
+    return 'curation_recommendations_' + kb_id
 
 
 _init_client()

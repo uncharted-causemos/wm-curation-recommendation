@@ -2,7 +2,7 @@ import os
 from services import es_service
 
 
-def search_by_text_and_polarity(subj_factor_text_originals, obj_factor_text_originals, subj_polarity, obj_polarity, index_name):
+def search_by_text_and_polarity(subj_text_originals, obj_text_originals, subj_polarity, obj_polarity, index_name):
     es_client = es_service.get_client()
 
     def _map_source(statement_doc):
@@ -22,8 +22,8 @@ def search_by_text_and_polarity(subj_factor_text_originals, obj_factor_text_orig
                     'must': [
                         {'term': {'subj.polarity': polarity}},
                         {'term': {'obj.polarity': polarity}},
-                        {'terms': {'subj.factor': factor_text_originals}},
-                        {'terms': {'obj.factor': factor_text_originals}}
+                        {'terms': {'subj.factor': text_originals}},
+                        {'terms': {'obj.factor': text_originals}}
                     ]
                 }
             }
@@ -46,12 +46,12 @@ def search_by_text_and_polarity(subj_factor_text_originals, obj_factor_text_orig
     return results
 
 
-def get_concept_candidates(factor_text_originals, kb_index_name):
+def get_concept_candidates(text_originals, kb_index_name):
     es_client = es_service.get_client()
 
     def _map_source(statement_doc):
         factor_candidates = None
-        factor_text_original = None
+        text_original = None
         subj_candidates = statement_doc['_source']['subj']['candidates']
         obj_candidates = statement_doc['_source']['obj']['candidates']
         subj_text = statement_doc['_source']['subj']['factor']
@@ -67,17 +67,17 @@ def get_concept_candidates(factor_text_originals, kb_index_name):
         elif len(matched_queries) == 2:
             if len(subj_candidates) > len(obj_candidates):
                 factor_candidates = subj_candidates
-                factor_text_original = subj_text
+                text_original = subj_text
             else:
                 factor_candidates = obj_candidates
-                factor_text_original = obj_text
+                text_original = obj_text
         else:
             # This should never hit
             raise AssertionError  # TODO: Fix
 
         return {
             'candidates': factor_candidates,
-            'factor_text_original': factor_text_original
+            'text_original': text_original
         }
 
     data = es_client.search(
@@ -89,8 +89,8 @@ def get_concept_candidates(factor_text_originals, kb_index_name):
             'query': {
                 'bool': {
                     'filter': [
-                        {'terms': {'subj.factor': factor_text_originals, '_name': 'subj'}},
-                        {'terms': {'obj.factor': factor_text_originals, '_name': 'obj'}}
+                        {'terms': {'subj.factor': text_originals, '_name': 'subj'}},
+                        {'terms': {'obj.factor': text_originals, '_name': 'obj'}}
                     ]
                 }
             }

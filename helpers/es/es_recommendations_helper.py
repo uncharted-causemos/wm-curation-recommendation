@@ -1,50 +1,54 @@
-import os
 from services import es_service
 
 
-_factor_index_mapping = {
+_recommendation_index_mapping = {
     'properties': {
-        'factor_text_original': {'type': 'keyword'},
-        'factor_text_cleaned': {'type': 'keyword'},
-        'cluster_id': {'type': 'integer'}
+        'text_original': {'type': 'keyword'},
+        'text_cleaned': {'type': 'keyword'},
+        'cluster_id': {'type': 'integer'},
+        'entity_type': {'type': 'keyword'}
     }
 }
 
 
-def get_factor_vector_field_name(dim):
-    return f'factor_vector_{dim}_d'
+def get_vector_field_name(dim):
+    return f'vector_{dim}_d'
 
 
-def get_factor_index_mapping():
-    return _factor_index_mapping
+def get_recommendation_index_mapping():
+    return _recommendation_index_mapping
 
 
-def map_factor_vector(factors, dim):
-    factor_vector_field_name = get_factor_vector_field_name(dim)
+def map_vector(recommendations, dim):
+    vector_field_name = get_vector_field_name(dim)
 
-    def _map(factor):
-        factor['factor_vector'] = factor[factor_vector_field_name]
-        return factor
+    def _map(reco):
+        reco['vector'] = reco[vector_field_name]
+        return reco
 
-    return list(map(_map, factors))
+    return list(map(_map, recommendations))
 
 
-def get_all_factors(factor_index_name, source_fields):
+def get_all_recommendations(recommendation_index_name, source_fields, entity_type):
 
-    def _map_factor_source(factor_doc):
-        factor = factor_doc['_source']
-        factor['id'] = factor_doc['_id']
-        return factor
+    def _map_reco_source(reco_doc):
+        reco = reco_doc['_source']
+        reco['id'] = reco_doc['_id']
+        return reco
 
     es_client = es_service.get_client()
     data = es_client.search(
-        index=factor_index_name,
+        index=recommendation_index_name,
         size=10000,
         scroll='2m',
         _source_includes=source_fields,
         body={
             'query': {
-                'match_all': {}
+                'bool': {
+                    'filter': [
+                        {'term': {'entity_type': entity_type}}
+                    ]
+                }
             }
         }
     )
@@ -52,24 +56,23 @@ def get_all_factors(factor_index_name, source_fields):
     sid = data['_scroll_id']
     scroll_size = len(data['hits']['hits'])
 
-    factors = []
+    recos = []
     while scroll_size > 0:
-        factors = factors + data['hits']['hits']
+        recos = recos + data['hits']['hits']
 
         data = es_client.scroll(scroll_id=sid, scroll='2m')
         sid = data['_scroll_id']
         scroll_size = len(data['hits']['hits'])
 
     es_client.clear_scroll(scroll_id=sid)
+    mapped_recos = list(map(_map_reco_source, recos))
+    return mapped_recos
 
-    mapped_factors = list(map(_map_factor_source, factors))
-    return mapped_factors
 
-
-def get_cluster_id(factor_index_name, factor_text_original):
+def get_cluster_id(recommendation_index_name, text_original):
     es_client = es_service.get_client()
     data = es_client.search(
-        index=factor_index_name,
+        index=recommendation_index_name,
         size=1,
         scroll='5m',
         _source_includes=['cluster_id'],
@@ -77,7 +80,7 @@ def get_cluster_id(factor_index_name, factor_text_original):
             'query': {
                 'bool': {
                     'filter': [
-                        {'term': {'factor_text_original': factor_text_original}}
+                        {'term': {'text_original': text_original}}
                     ]
                 }
             }
@@ -91,21 +94,21 @@ def get_cluster_id(factor_index_name, factor_text_original):
     return docs[0]['_source']['cluster_id']
 
 
-def get_factors_in_same_cluster(factor_index_name, cluster_id, clustering_dim):
-    factor_vector_field_name = get_factor_vector_field_name(clustering_dim)
+def get_recommendations_in_same_cluster(recommendation_index_name, cluster_id, clustering_dim):
+    vector_field_name = get_vector_field_name(clustering_dim)
 
-    def _map_source(factor_doc):
-        factor = factor_doc['_source']
-        factor['factor_vector'] = factor[factor_vector_field_name]
-        factor.pop(factor_vector_field_name, None)
-        return factor
+    def _map_source(reco_doc):
+        reco = reco_doc['_source']
+        reco['vector'] = reco[vector_field_name]
+        reco.pop(vector_field_name, None)
+        return reco
 
     es_client = es_service.get_client()
     data = es_client.search(
-        index=factor_index_name,
+        index=recommendation_index_name,
         size=10000,
         scroll='5m',
-        _source_includes=['factor_text_original', 'factor_text_cleaned', factor_vector_field_name],
+        _source_includes=['text_original', 'text_cleaned', vector_field_name],
         body={
             'query': {
                 'bool': {
@@ -129,21 +132,21 @@ def get_factors_in_same_cluster(factor_index_name, cluster_id, clustering_dim):
         scroll_size = len(data['hits']['hits'])
 
     es_client.clear_scroll(scroll_id=sid)
-    print(f'Finished fetching all factors for cluster {cluster_id}')
+    print(f'Finished fetching all recommendations for cluster {cluster_id}')
     return results
 
 
-def get_factor(factor_index_name, factor_text_original):
+def get_recommendation(recommendation_index_name, text_original):
     es_client = es_service.get_client()
     data = es_client.search(
-        index=factor_index_name,
+        index=recommendation_index_name,
         size=1,
         scroll='5m',
         body={
             'query': {
                 'bool': {
                     'filter': [
-                        {'term': {'factor_text_original': factor_text_original}}
+                        {'term': {'text_original': text_original}}
                     ]
                 }
             }
