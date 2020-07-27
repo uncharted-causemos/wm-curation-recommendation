@@ -33,7 +33,7 @@ def get_tasks_client():
     return _tasks_client
 
 
-def get_curation_project_index_name(project_id):
+def get_curation_project_index_id(project_id):
     return 'curation_recomendations_project_' + project_id
 
 
