@@ -25,13 +25,20 @@ delete_statement_reco_index_if_exists = os.getenv('DELETE_STATEMENT_RECOMMENDATI
 factor_reco_index_id = es_recommendations_helper.get_factor_recommendation_index_name(kb_index_id)
 statement_reco_index_id = es_recommendations_helper.get_statement_recommendation_index_name(kb_index_id)
 
+
+print("Processing entire KB into factor recommendations and statement recommendations...")
+print("=================================================================================")
 es_setup.setup_recommendation_indices(factor_reco_index_id,
                                       statement_reco_index_id,
                                       delete_factor_reco_index_if_exists,
                                       delete_statement_reco_index_if_exists)
 process_kb.process(kb_index_id, factor_reco_index_id, statement_reco_index_id)
+print("==========================================================================================")
+print("Finished processing entire KB into factor recommendations and statement recommendations...")
 
 # TODO: Confirm parameters are correct
+print("Starting umap + hdbscan process for factor recommendations...")
+print("========================================================")
 compute_umap.compute_and_update(dim_start=300,
                                 dim_end=20,
                                 min_dist=0.01,
@@ -46,7 +53,11 @@ compute_umap.compute_and_update(dim_start=20,
                                 min_dist=0.01,
                                 reco_index_id=factor_reco_index_id)
 
+print("======================================================")
+print("Finished umap + hdbscan process for factor recommendations.")
 
+print("Starting umap + hdbscan process for statement recommendations...")
+print("===========================================================")
 compute_umap.compute_and_update(dim_start=300,
                                 dim_end=20,
                                 min_dist=0.01,
@@ -60,3 +71,5 @@ compute_umap.compute_and_update(dim_start=20,
                                 dim_end=2,
                                 min_dist=0.01,
                                 reco_index_id=statement_reco_index_id)
+print("=========================================================")
+print("Finished umap + hdbscan process for statement recommendations.")
