@@ -1,55 +1,67 @@
 import os
 from services import es_service, ontology_service
-from helpers.es import es_factors_helper, es_kb_helper
-from helpers import utils
-from sklearn.neighbors import KDTree
+from helpers.es import es_recommendations_helper, es_kb_helper
 from scipy.stats import entropy
 import numpy as np
 
 
-def get_factor(factor_text_original, kb_index_id):
-    factor_index_name = es_service.get_factor_index_name(kb_index_id)
-    factor_doc = es_factors_helper.get_factor(factor_index_name, factor_text_original)
+def get_reco_doc(text_original, index_id):
+    reco_doc = es_recommendations_helper.get_recommendation(index_id, text_original)
+    clustering_vector_field_name = es_recommendations_helper.get_dim_vector_field_name(os.getenv('CLUSTERING_DIM'))
+    reco_doc['vector'] = reco_doc[clustering_vector_field_name]
+    return reco_doc
 
+
+def get_recommendations_in_cluster(cluster_id, index_id):
     clustering_dim = os.getenv('CLUSTERING_DIM')
-    factor_vector_field_name = es_factors_helper.get_factor_vector_field_name(clustering_dim)
-    factor_doc['factor_vector'] = factor_doc[factor_vector_field_name]
-
-    return factor_doc
+    recommendations_in_cluster = es_recommendations_helper.get_recommendations_in_same_cluster(index_id, cluster_id, clustering_dim)
+    return recommendations_in_cluster
 
 
-def get_factors_in_cluster(cluster_id, kb_index_id):
-    clustering_dim = os.getenv('CLUSTERING_DIM')
-    factor_index_name = es_service.get_factor_index_name(kb_index_id)
-    factors_in_cluster = es_factors_helper.get_factors_in_same_cluster(factor_index_name, cluster_id, clustering_dim)
-    return factors_in_cluster
+def compute_knn(query_doc, fields_to_include, index_id):
+    clustering_dim = os.getenv("CLUSTERING_DIM")
+    vector_field_name = es_recommendations_helper.get_dim_vector_field_name(clustering_dim)
+    es_client = es_service.get_client()
+    data = es_client.search(
+        index=index_id,
+        # TODO: Currently this is set to 1K because CauseMos will filter for visible graph (and potentially polarity). Also max number of docs in cluster is roughly 500
+        size=1000,
+        scroll='5m',
+        _source_includes=fields_to_include,
+        body={
+            'query': {
+                'script_score': {
+                    'query': {
+                        'term': {
+                            'cluster_id': query_doc['cluster_id']
+                        }
+                    },
+                    'script': {
+                        'source': f"cosineSimilarity(params.query_vector, '{vector_field_name}')",
+                        'params': {'query_vector': query_doc[vector_field_name]}
+                    }
+                }
+            }
+        }
+    )
+
+    print('Finished fetching all recommendations for statement')
+    return data['hits']['hits']
 
 
-def compute_knn(factor_doc, all_factors, num_nn):
-    clustering_dim = os.getenv('CLUSTERING_DIM')
-    factor_vector_field_name = es_factors_helper.get_factor_vector_field_name(clustering_dim)
-    factor_vector_matrix = utils.build_factor_vector_matrix(all_factors)
-    kd_tree = KDTree(factor_vector_matrix, leaf_size=2)
-    distances, sorted_indices = kd_tree.query(np.array(factor_doc[factor_vector_field_name]).reshape(1, -1), min(num_nn, factor_vector_matrix.shape[0]))
-    knn = list(map(lambda i: {'factor': all_factors[i]['factor_text_original']}, sorted_indices.flatten().tolist()))
-    return knn
+def compute_kl_divergence(query_doc, all_recos, project_index_id):
+    text_originals = list(map(lambda x: x['text_original'], all_recos))
 
-
-def compute_kl_divergence(factor_doc, all_factors, project_index_id, num_nn):
-    factor_text_originals = list(map(lambda x: x['factor_text_original'], all_factors))
-
-    factors_concept_candidates = es_kb_helper.get_concept_candidates_for_all_factors(factor_text_originals, project_index_id)
+    factors_concept_candidates = es_kb_helper.get_concept_candidates_for_all_factors(text_originals, project_index_id)
     factor_concept_candidate_distributions = np.array(list(map(_map_concept_candidates_to_distribution, factors_concept_candidates)))
 
-    factor_doc_concept_candidate = es_kb_helper.get_concept_candidates_for_factor(factor_doc['factor_text_original'], project_index_id)
+    factor_doc_concept_candidate = es_kb_helper.get_concept_candidates_for_factor(query_doc['text_original'], project_index_id)
     factor_doc_concept_candidate_dist = np.array(_map_concept_candidates_to_distribution(factor_doc_concept_candidate))
 
     kl_divergence_scores = np.array([entropy(factor_doc_concept_candidate_dist, f_dist) for f_dist in factor_concept_candidate_distributions])
     sorted_indices = np.argsort(kl_divergence_scores)
-    lowest_kl_divergence_factors = np.array(factors_concept_candidates)[sorted_indices[:num_nn]]
-    kl_nn = list(map(lambda factor: {'factor': factor['factor_text_original']},
-                     lowest_kl_divergence_factors.flatten().tolist()))
-    return kl_nn
+    factors_sorted = np.array(factors_concept_candidates)[sorted_indices]
+    return factors_sorted
 
 
 def _map_concept_candidates_to_distribution(factor_concept_candidate):

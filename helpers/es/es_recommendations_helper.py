@@ -5,7 +5,10 @@ _factor_recommendation_index_mapping = {
     'properties': {
         'text_original': {'type': 'keyword'},
         'text_cleaned': {'type': 'keyword'},
-        'cluster_id': {'type': 'integer'}
+        'cluster_id': {'type': 'integer'},
+        'vector_300_d': {'type': 'dense_vector', 'dims': 300},
+        'vector_20_d': {'type': 'dense_vector', 'dims': 20},
+        'vector_2_d': {'type': 'dense_vector', 'dims': 2}
     }
 }
 
@@ -13,14 +16,17 @@ _statement_recommendation_index_mapping = {
     'properties': {
         'text_original': {'type': 'keyword'},
         'text_cleaned': {'type': 'keyword'},
+        'cluster_id': {'type': 'integer'},
+        'vector_300_d': {'type': 'dense_vector', 'dims': 300},
+        'vector_20_d': {'type': 'dense_vector', 'dims': 20},
+        'vector_2_d': {'type': 'dense_vector', 'dims': 2},
         'subj_factor': {'type': 'keyword'},
-        'obj_factor': {'type': 'keyword'},
-        'cluster_id': {'type': 'integer'}
+        'obj_factor': {'type': 'keyword'}
     }
 }
 
 
-def get_vector_field_name(dim):
+def get_dim_vector_field_name(dim):
     return f'vector_{dim}_d'
 
 
@@ -32,16 +38,16 @@ def get_statement_recommendation_index_mapping():
     return _factor_recommendation_index_mapping
 
 
-def get_factor_recommendation_index_name(kb_id):
+def get_factor_recommendation_index_id(kb_id):
     return 'curation_factor_recommendations_' + kb_id
 
 
-def get_statement_recommendation_index_name(kb_id):
+def get_statement_recommendation_index_id(kb_id):
     return 'curation_statement_recommendations_' + kb_id
 
 
 def map_vector(recommendations, dim):
-    vector_field_name = get_vector_field_name(dim)
+    vector_field_name = get_dim_vector_field_name(dim)
 
     def _map(reco):
         reco['vector'] = reco[vector_field_name]
@@ -50,7 +56,7 @@ def map_vector(recommendations, dim):
     return list(map(_map, recommendations))
 
 
-def get_all_recommendations(recommendation_index_name, source_fields):
+def get_all_recommendations(recommendation_index_id, source_fields):
 
     def _map_reco_source(reco_doc):
         reco = reco_doc['_source']
@@ -59,7 +65,7 @@ def get_all_recommendations(recommendation_index_name, source_fields):
 
     es_client = es_service.get_client()
     data = es_client.search(
-        index=recommendation_index_name,
+        index=recommendation_index_id,
         size=10000,
         scroll='2m',
         _source_includes=source_fields,
@@ -86,10 +92,10 @@ def get_all_recommendations(recommendation_index_name, source_fields):
     return mapped_recos
 
 
-def get_cluster_id(recommendation_index_name, text_original):
+def get_cluster_id(recommendation_index_id, text_original):
     es_client = es_service.get_client()
     data = es_client.search(
-        index=recommendation_index_name,
+        index=recommendation_index_id,
         size=1,
         scroll='5m',
         _source_includes=['cluster_id'],
@@ -111,8 +117,8 @@ def get_cluster_id(recommendation_index_name, text_original):
     return docs[0]['_source']['cluster_id']
 
 
-def get_recommendations_in_same_cluster(recommendation_index_name, cluster_id, clustering_dim):
-    vector_field_name = get_vector_field_name(clustering_dim)
+def get_recommendations_in_same_cluster(recommendation_index_id, cluster_id, clustering_dim):
+    vector_field_name = get_dim_vector_field_name(clustering_dim)
 
     def _map_source(reco_doc):
         reco = reco_doc['_source']
@@ -122,7 +128,7 @@ def get_recommendations_in_same_cluster(recommendation_index_name, cluster_id, c
 
     es_client = es_service.get_client()
     data = es_client.search(
-        index=recommendation_index_name,
+        index=recommendation_index_id,
         size=10000,
         scroll='5m',
         _source_includes=['text_original', 'text_cleaned', vector_field_name],
@@ -153,10 +159,10 @@ def get_recommendations_in_same_cluster(recommendation_index_name, cluster_id, c
     return results
 
 
-def get_recommendation(recommendation_index_name, text_original):
+def get_recommendation(recommendation_index_id, text_original):
     es_client = es_service.get_client()
     data = es_client.search(
-        index=recommendation_index_name,
+        index=recommendation_index_id,
         size=1,
         scroll='5m',
         body={

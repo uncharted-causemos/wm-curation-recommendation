@@ -12,7 +12,7 @@ def compute_and_update(dim, min_cluster_size, min_samples, cluster_selection_eps
 
 
 def _get_all_recommendations_deduped(dim, reco_index_id):
-    recommendation_vector_field_name = es_recommendations_helper.get_vector_field_name(dim)
+    recommendation_vector_field_name = es_recommendations_helper.get_dim_vector_field_name(dim)
     recos = es_recommendations_helper.get_all_recommendations(reco_index_id, source_fields=['text_cleaned', recommendation_vector_field_name])
     recos = es_recommendations_helper.map_vector(recos, dim)
     recos = utils.dedupe_recommendations(recos, 'text_cleaned')

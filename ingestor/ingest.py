@@ -22,8 +22,8 @@ from helpers.es import es_recommendations_helper
 kb_index_id = os.getenv('KB_INDEX_NAME')
 delete_factor_reco_index_if_exists = os.getenv('DELETE_FACTOR_RECOMMENDATION_INDEX_IF_EXISTS')
 delete_statement_reco_index_if_exists = os.getenv('DELETE_STATEMENT_RECOMMENDATION_INDEX_IF_EXISTS')
-factor_reco_index_id = es_recommendations_helper.get_factor_recommendation_index_name(kb_index_id)
-statement_reco_index_id = es_recommendations_helper.get_statement_recommendation_index_name(kb_index_id)
+factor_reco_index_id = es_recommendations_helper.get_factor_recommendation_index_id(kb_index_id)
+statement_reco_index_id = es_recommendations_helper.get_statement_recommendation_index_id(kb_index_id)
 
 
 print("Processing entire KB into factor recommendations and statement recommendations...")
