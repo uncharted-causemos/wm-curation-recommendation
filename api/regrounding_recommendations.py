@@ -13,7 +13,7 @@ def get_recommendations():
     factor_text_original = body['factor']
     factor_reco_index_id = es_recommendations_helper.get_factor_recommendation_index_id(kb_index_id)
 
-    factor_doc = recommendations_helper.get_reco_doc(factor_text_original, kb_index_id)
+    factor_doc = recommendations_helper.get_reco_doc(factor_text_original, factor_reco_index_id)
 
     if factor_doc['cluster_id'] == -1:
         _build_response([])
