@@ -35,7 +35,7 @@ def get_factor_recommendation_index_mapping():
 
 
 def get_statement_recommendation_index_mapping():
-    return _factor_recommendation_index_mapping
+    return _statement_recommendation_index_mapping
 
 
 def get_factor_recommendation_index_id(kb_id):
