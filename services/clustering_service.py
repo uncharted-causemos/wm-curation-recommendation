@@ -1,10 +1,9 @@
 import hdbscan
-import pandas as pd
 import numpy as np
 
 
 def compute_clusters(data, min_cluster_size, min_samples, cluster_selection_epsilon):
-    print('Computing cluster ids for all factors')
+    print('Computing cluster ids for all data')
     try:
         clusterer = hdbscan.HDBSCAN(min_cluster_size=min_cluster_size,
                                     min_samples=min_samples,
@@ -14,7 +13,7 @@ def compute_clusters(data, min_cluster_size, min_samples, cluster_selection_epsi
         print('ERROR: There was an exception while trying to compute clusters')
         print('Exception Details: ', e)
         return _noisy_cluster_ids(data)
-    print('Finished computing cluster ids for all factors')
+    print('Finished computing cluster ids for all data')
     return cluster_ids
 
 

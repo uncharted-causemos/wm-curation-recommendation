@@ -1,57 +1,54 @@
-import os
 from elasticsearch.helpers import bulk
 from services import dimension_reduction_service, es_service
-from helpers.es import es_factors_helper
+from helpers.es import es_recommendations_helper
 from helpers import utils
-import numpy as np
 
 
-def compute_and_update(dim_start, dim_end, min_dist):
-    deduped_factors = _get_all_factors(dim_start)
-    factor_vectors_x_d = _compute_umap(deduped_factors, dim_end, min_dist)
-    _update_factors(deduped_factors, factor_vectors_x_d, dim_end)
+def compute_and_update(dim_start, dim_end, min_dist, reco_index_id):
+    deduped_recommendations = _get_all_recommendations(dim_start, reco_index_id)
+    vectors_x_d = _compute_umap(deduped_recommendations, dim_end, min_dist)
+    _update_recommendations(deduped_recommendations, vectors_x_d, dim_end, reco_index_id)
 
 
-def _get_all_factors(dim):
-    factor_index_name = es_service.get_factor_index_name(os.getenv('KB_INDEX_NAME'))
-    factor_vector_field_name = es_factors_helper.get_factor_vector_field_name(dim)
-    factors = es_factors_helper.get_all_factors(factor_index_name, source_fields=['factor_text_cleaned', factor_vector_field_name])
-    factors = es_factors_helper.map_factor_vector(factors, dim)
-    factors = utils.dedupe_factors(factors, 'factor_text_cleaned')
-    return factors
+def _get_all_recommendations(dim, reco_index_id):
+    vector_field_name = es_recommendations_helper.get_vector_field_name(dim)
+    recos = es_recommendations_helper.get_all_recommendations(reco_index_id, source_fields=['text_cleaned', vector_field_name])
+    recos = es_recommendations_helper.map_vector(recos, dim)
+    recos = utils.dedupe_recommendations(recos, 'text_cleaned')
+    return recos
 
 
-def _compute_umap(factors, dim, min_dist):
-    print('Computing umap for all concepts and factors.')
-    factor_vector_matrix = utils.build_factor_vector_matrix(factors)
+def _compute_umap(recos, dim, min_dist):
+    print('Computing umap for all recommendations.')
+    reco_vector_matrix = utils.build_reco_vector_matrix(recos)
 
-    mapper = dimension_reduction_service.fit(factor_vector_matrix, n_components=dim, min_dist=min_dist)
-    factor_vectors_x_d = dimension_reduction_service.transform(mapper, factor_vector_matrix)  # TODO: Save the mapper on disk somewhere?
+    mapper = dimension_reduction_service.fit(reco_vector_matrix, n_components=dim, min_dist=min_dist)
+    reco_vectors_x_d = dimension_reduction_service.transform(mapper, reco_vector_matrix)  # TODO: Save the mapper on disk somewhere?
 
-    if len(factors) != len(factor_vectors_x_d):
+    if len(recos) != len(reco_vectors_x_d):
         raise AssertionError  # TODO: Fix
 
-    print('Finished computing umap for all factors.')
-    return factor_vectors_x_d
+    print('Finished computing umap for all recommendations.')
+    return reco_vectors_x_d
 
 
-def _update_factors(deduped_factors, factor_vectors_x_d, dim):
+def _update_recommendations(deduped_recommendations, reco_vectors_x_d, dim, reco_index_id):
     es_client = es_service.get_client()
-    print(f'Updating factors with {dim} dimensional vectors.')
-    bulk(es_client, _build_factor_update(deduped_factors, factor_vectors_x_d, dim))
-    es_service.get_client().indices.refresh(index=es_service.get_factor_index_name(os.getenv('KB_INDEX_NAME')))
-    print(f'Finished updating factors with {dim} dimensional vectors.')
+    print(f'Updating recommendations with {dim} dimensional vectors.')
+    bulk(es_client, _build_reco_update(deduped_recommendations, reco_vectors_x_d, dim, reco_index_id))
+    es_service.get_client().indices.refresh(index=reco_index_id)
+    print(f'Finished updating recommendations with {dim} dimensional vectors.')
 
 
-def _build_factor_update(deduped_factors, factor_vectors_x_d, dim):
-    factor_vector_field_name = es_factors_helper.get_factor_vector_field_name(dim)
-    for idx, f in enumerate(deduped_factors):
+def _build_reco_update(deduped_recos, reco_vectors_x_d, dim, reco_index_id):
+    reco_vector_field_name = es_recommendations_helper.get_vector_field_name(dim)
+    for idx, f in enumerate(deduped_recos):
         for f_id in f['id']:
-            factor_update = {
+            reco_update = {
                 '_op_type': 'update',
-                '_index': es_service.get_factor_index_name(os.getenv('KB_INDEX_NAME')),
+                '_index': reco_index_id,
                 '_id': f_id,
                 'doc': {}
             }
-            factor_update['doc'][factor_vector_field_name] = factor_vectors_x_d[idx].tolist()
-            yield factor_update
+            reco_update['doc'][reco_vector_field_name] = reco_vectors_x_d[idx].tolist()
+            yield reco_update
