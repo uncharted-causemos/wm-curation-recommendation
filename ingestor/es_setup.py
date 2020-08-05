@@ -15,7 +15,7 @@ def setup_recommendation_indices(factor_reco_index_id,
 def _delete_factor_recommendation_index(factor_reco_index_id, delete_factor_reco_index_if_exists):
     es_client = es_service.get_client()
 
-    if es_client.indices.exists(index=factor_reco_index_id) and delete_factor_reco_index_if_exists == 'true':
+    if es_client.indices.exists(index=factor_reco_index_id) and delete_factor_reco_index_if_exists == True:
         print('Deleting factor recommendation index!')
         es_client.indices.delete(index=factor_reco_index_id)
 
@@ -23,7 +23,7 @@ def _delete_factor_recommendation_index(factor_reco_index_id, delete_factor_reco
 def _delete_statement_recommendation_index(statement_reco_index_id, delete_statement_reco_index_if_exists):
     es_client = es_service.get_client()
 
-    if es_client.indices.exists(index=statement_reco_index_id) and delete_statement_reco_index_if_exists == 'true':
+    if es_client.indices.exists(index=statement_reco_index_id) and delete_statement_reco_index_if_exists == True:
         print('Deleting statement recommendation index!')
         es_client.indices.delete(index=statement_reco_index_id)
 
