@@ -1,6 +1,7 @@
 from flask import Blueprint, request, jsonify
 from helpers.api import recommendations_helper
 from helpers.es import es_recommendations_helper
+from services import regrounding_recommendations_service
 
 regrounding_recommendations_api = Blueprint('regrounding_recommendations_api', __name__)
 
@@ -11,15 +12,20 @@ def get_recommendations():
     project_index_id = body['project_id']
     kb_index_id = body['kb_id']
     factor_text_original = body['factor']
+    num_recommendations = int(body['num_recommendations'])
+    statement_ids = body['statement_ids']
     factor_reco_index_id = es_recommendations_helper.get_factor_recommendation_index_id(kb_index_id)
+
+    if num_recommendations > 10000:
+        raise AssertionError  # TODO: Fix
 
     factor_doc = recommendations_helper.get_reco_doc(factor_text_original, factor_reco_index_id)
 
     if factor_doc['cluster_id'] == -1:
-        _build_response([])
+        return _build_response([])
 
-    knn = _compute_knn(factor_doc, factor_reco_index_id)
-    kl_nn = _compute_kl_divergence_nn(factor_doc, factor_reco_index_id, project_index_id)
+    knn = regrounding_recommendations_service.compute_knn(factor_doc, statement_ids, project_index_id, factor_reco_index_id)
+    kl_nn = regrounding_recommendations_service.compute_kl_divergence_nn(factor_doc, project_index_id, factor_reco_index_id)
 
     recommended_factors = knn + kl_nn
     return _build_response(recommended_factors)
@@ -30,27 +36,3 @@ def _build_response(recommended_factors):
         'recommendations': recommended_factors
     }
     return jsonify(response)
-
-
-def _compute_kl_divergence_nn(factor_doc, factor_reco_index_id, project_index_id):
-    def _map_kl_nn_results(f):
-        return {
-            'factor': f['text_original']
-        }
-
-    factors_in_cluster = recommendations_helper.get_recommendations_in_cluster(factor_doc['cluster_id'], factor_reco_index_id)
-    kl_nn = recommendations_helper.compute_kl_divergence(factor_doc, factors_in_cluster, project_index_id)
-    kl_nn = list(map(_map_kl_nn_results, kl_nn.flatten().tolist()))
-    return kl_nn
-
-
-def _compute_knn(factor_doc, factor_reco_index_id):
-    def _map_knn_results(f):
-        return {
-            'factor': f['_source']['text_original']
-        }
-
-    fields_to_include = ['text_original']
-    knn = recommendations_helper.compute_knn(factor_doc, fields_to_include, factor_reco_index_id)
-    knn = list(map(_map_knn_results, knn))
-    return knn

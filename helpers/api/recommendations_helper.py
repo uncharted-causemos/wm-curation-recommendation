@@ -18,24 +18,19 @@ def get_recommendations_in_cluster(cluster_id, index_id):
     return recommendations_in_cluster
 
 
-def compute_knn(query_doc, fields_to_include, index_id):
+def compute_knn(query_doc, fields_to_include, query_filter, index_id):
     clustering_dim = os.getenv("CLUSTERING_DIM")
     vector_field_name = es_recommendations_helper.get_dim_vector_field_name(clustering_dim)
     es_client = es_service.get_client()
     data = es_client.search(
         index=index_id,
         # TODO: Currently this is set to 1K because CauseMos will filter for visible graph (and potentially polarity). Also max number of docs in cluster is roughly 500
-        size=1000,
-        scroll='5m',
+        size=10000,  # Max number of recommendations
         _source_includes=fields_to_include,
         body={
             'query': {
                 'script_score': {
-                    'query': {
-                        'term': {
-                            'cluster_id': query_doc['cluster_id']
-                        }
-                    },
+                    'query': query_filter,
                     'script': {
                         'source': f"cosineSimilarity(params.query_vector, '{vector_field_name}')",
                         'params': {'query_vector': query_doc[vector_field_name]}
