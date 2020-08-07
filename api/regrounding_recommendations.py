@@ -28,7 +28,8 @@ def get_recommendations():
     num_knn_recommendations = math.ceil(num_recommendations / 2.0)
     num_kl_nn_recommendations = math.floor(num_recommendations / 2.0)
     knn = regrounding_recommendations_service.compute_knn(factor_doc, statement_ids, num_knn_recommendations, project_index_id, factor_reco_index_id)
-    kl_nn = regrounding_recommendations_service.compute_kl_divergence_nn(factor_doc, num_kl_nn_recommendations, project_index_id, factor_reco_index_id)
+    kl_nn = regrounding_recommendations_service.compute_kl_divergence_nn(
+        factor_doc, statement_ids, num_kl_nn_recommendations, project_index_id, factor_reco_index_id)
 
     recommended_factors = knn + kl_nn
     return _build_response(recommended_factors)

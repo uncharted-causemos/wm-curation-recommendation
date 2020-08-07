@@ -2,28 +2,28 @@ from services import es_service
 from functools import reduce
 
 
-def get_concept_candidates_for_all_factors(text_originals, kb_index_id):
-    results = _get_concept_candidates(text_originals, kb_index_id)
+def get_concept_candidates_for_all_factors(text_originals, statement_ids, kb_index_id):
+    results = _get_concept_candidates(text_originals, statement_ids, kb_index_id)
     results = list(map(_map_factor_source_to_concept_candidate, results))
     deduped_results = _dedupe_on_factor_text_original(results)
     return deduped_results
 
 
-def get_concept_candidates_for_factor(text_original, kb_index_id):
+def get_concept_candidates_for_factor(text_original, statement_ids, kb_index_id):
     def _reduce_candidates(factor_x, factor_y):
         if len(factor_x['candidates']) < len(factor_y['candidates']):
             return factor_y
         else:
             return factor_x
 
-    results = _get_concept_candidates([text_original], kb_index_id)
+    results = _get_concept_candidates([text_original], statement_ids, kb_index_id)
     results = list(map(_map_factor_source_to_concept_candidate, results))
     result = reduce(_reduce_candidates, results)
     print('Finished fetching concept candidates for factor.')
     return result
 
 
-def _get_concept_candidates(text_originals, kb_index_id):
+def _get_concept_candidates(text_originals, statement_ids, kb_index_id):
     es_client = es_service.get_client()
 
     data = es_client.search(
@@ -34,10 +34,16 @@ def _get_concept_candidates(text_originals, kb_index_id):
         body={
             'query': {
                 'bool': {
+                    'filter': {
+                        'terms': {
+                            'id': statement_ids
+                        }
+                    },
                     'should': [
                         {'terms': {'subj.factor': text_originals, '_name': 'subj'}},
                         {'terms': {'obj.factor': text_originals, '_name': 'obj'}}
-                    ]
+                    ],
+                    'minimum_should_match': 1
                 }
             }
         }
