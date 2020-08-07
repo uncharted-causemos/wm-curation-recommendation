@@ -23,7 +23,12 @@ def get_recommendations():
     if statement_doc['cluster_id'] == -1:
         return _build_response([])
 
-    recommended_statements = polarity_recommendations_service.compute_knn(statement_doc, statement_ids, polarity, project_index_id, kb_index_id)
+    recommended_statements = polarity_recommendations_service.compute_knn(statement_doc,
+                                                                          statement_ids,
+                                                                          polarity,
+                                                                          num_recommendations,
+                                                                          project_index_id,
+                                                                          kb_index_id)
     return _build_response(recommended_statements)
 
 

@@ -18,14 +18,14 @@ def get_recommendations_in_cluster(cluster_id, index_id):
     return recommendations_in_cluster
 
 
-def compute_knn(query_doc, fields_to_include, query_filter, index_id):
+def compute_knn(query_doc, fields_to_include, query_filter, num_recommendations, index_id):
     clustering_dim = os.getenv("CLUSTERING_DIM")
     vector_field_name = es_recommendations_helper.get_dim_vector_field_name(clustering_dim)
     es_client = es_service.get_client()
     data = es_client.search(
         index=index_id,
         # TODO: Currently this is set to 1K because CauseMos will filter for visible graph (and potentially polarity). Also max number of docs in cluster is roughly 500
-        size=10000,  # Max number of recommendations
+        size=num_recommendations,  # Max number of recommendations
         _source_includes=fields_to_include,
         body={
             'query': {
@@ -44,7 +44,7 @@ def compute_knn(query_doc, fields_to_include, query_filter, index_id):
     return data['hits']['hits']
 
 
-def compute_kl_divergence(query_doc, all_recos, project_index_id):
+def compute_kl_divergence(query_doc, all_recos, num_recommendations, project_index_id):
     text_originals = list(map(lambda x: x['text_original'], all_recos))
 
     factors_concept_candidates = es_kb_helper.get_concept_candidates_for_all_factors(text_originals, project_index_id)
@@ -56,7 +56,7 @@ def compute_kl_divergence(query_doc, all_recos, project_index_id):
     kl_divergence_scores = np.array([entropy(factor_doc_concept_candidate_dist, f_dist) for f_dist in factor_concept_candidate_distributions])
     sorted_indices = np.argsort(kl_divergence_scores)
     factors_sorted = np.array(factors_concept_candidates)[sorted_indices]
-    return factors_sorted
+    return factors_sorted[:num_recommendations]
 
 
 def _map_concept_candidates_to_distribution(factor_concept_candidate):

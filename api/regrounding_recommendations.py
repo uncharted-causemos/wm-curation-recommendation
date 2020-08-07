@@ -1,3 +1,4 @@
+import math
 from flask import Blueprint, request, jsonify
 from helpers.api import recommendations_helper
 from helpers.es import es_recommendations_helper
@@ -24,8 +25,10 @@ def get_recommendations():
     if factor_doc['cluster_id'] == -1:
         return _build_response([])
 
-    knn = regrounding_recommendations_service.compute_knn(factor_doc, statement_ids, project_index_id, factor_reco_index_id)
-    kl_nn = regrounding_recommendations_service.compute_kl_divergence_nn(factor_doc, project_index_id, factor_reco_index_id)
+    num_knn_recommendations = math.ceil(num_recommendations / 2.0)
+    num_kl_nn_recommendations = math.floor(num_recommendations / 2.0)
+    knn = regrounding_recommendations_service.compute_knn(factor_doc, statement_ids, num_knn_recommendations, project_index_id, factor_reco_index_id)
+    kl_nn = regrounding_recommendations_service.compute_kl_divergence_nn(factor_doc, num_kl_nn_recommendations, project_index_id, factor_reco_index_id)
 
     recommended_factors = knn + kl_nn
     return _build_response(recommended_factors)
