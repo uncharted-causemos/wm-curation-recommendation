@@ -4,12 +4,12 @@ from elasticsearch.helpers import parallel_bulk
 from services import embedding_service, es_service
 
 
-def process(kb_index_name, factor_reco_index_id, statement_reco_index_id):
+def process(kb_index_id, factor_reco_index_id, statement_reco_index_id):
     es_client = es_service.get_client()
 
     # Get ES Record cursor
     data = es_client.search(
-        index=kb_index_name,
+        index=kb_index_id,
         size=10000,
         scroll='10m',
         _source_includes=['subj.factor', 'obj.factor'],
@@ -70,8 +70,6 @@ def _build_factor_recommendation(text_original, factor_reco_index_id):
         '_id': hash(text_original),
         '_source': {
             'vector_300_d': embedding_service.compute_normalized_vector(text_cleaned).tolist(),
-            'vector_20_d': [],
-            'vector_2_d': [],
             'text_cleaned': text_cleaned,
             'text_original': text_original
         }
@@ -87,8 +85,6 @@ def _build_statement_recommendation(statement_source, statement_reco_index_id):
         '_id': hash(text_original),
         '_source': {
             'vector_300_d': embedding_service.compute_normalized_vector(text_cleaned).tolist(),
-            'vector_20_d': [],
-            'vector_2_d': [],
             'text_cleaned': text_cleaned,
             'text_original': text_original,
             'subj_factor': statement_source['subj']['factor'],

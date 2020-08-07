@@ -11,7 +11,7 @@ def compute_and_update(dim_start, dim_end, min_dist, reco_index_id):
 
 
 def _get_all_recommendations(dim, reco_index_id):
-    vector_field_name = es_recommendations_helper.get_vector_field_name(dim)
+    vector_field_name = es_recommendations_helper.get_dim_vector_field_name(dim)
     recos = es_recommendations_helper.get_all_recommendations(reco_index_id, source_fields=['text_cleaned', vector_field_name])
     recos = es_recommendations_helper.map_vector(recos, dim)
     recos = utils.dedupe_recommendations(recos, 'text_cleaned')
@@ -41,7 +41,7 @@ def _update_recommendations(deduped_recommendations, reco_vectors_x_d, dim, reco
 
 
 def _build_reco_update(deduped_recos, reco_vectors_x_d, dim, reco_index_id):
-    reco_vector_field_name = es_recommendations_helper.get_vector_field_name(dim)
+    reco_vector_field_name = es_recommendations_helper.get_dim_vector_field_name(dim)
     for idx, f in enumerate(deduped_recos):
         for f_id in f['id']:
             reco_update = {
