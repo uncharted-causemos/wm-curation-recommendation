@@ -3,14 +3,14 @@ from helpers.api import recommendations_helper
 from services import es_service
 
 
-def compute_kl_divergence_nn(factor_reco_doc, num_recommendations, project_index_id, factor_reco_index_id):
+def compute_kl_divergence_nn(factor_reco_doc, statement_ids, num_recommendations, project_index_id, factor_reco_index_id):
     def _map_kl_nn_results(f):
         return {
             'factor': f['text_original']
         }
 
     factors_in_cluster = recommendations_helper.get_recommendations_in_cluster(factor_reco_doc['cluster_id'], factor_reco_index_id)
-    kl_nn = recommendations_helper.compute_kl_divergence(factor_reco_doc, factors_in_cluster, num_recommendations, project_index_id)
+    kl_nn = recommendations_helper.compute_kl_divergence(factor_reco_doc, factors_in_cluster, statement_ids, num_recommendations, project_index_id)
     kl_nn = list(map(_map_kl_nn_results, kl_nn.flatten().tolist()))
     return kl_nn
 
