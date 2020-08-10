@@ -1,8 +1,10 @@
 from flask import Flask
-from dotenv import load_dotenv, find_dotenv
+from dotenv import load_dotenv
+import os
 
 # Load env before loading app specific files
-load_dotenv(find_dotenv(), override=True)
+env_file_path = os.getenv('WM_CURATION_RECOMMENDATIONS_ENV_FILE_PATH')
+load_dotenv(env_file_path, override=True)
 
 from api.health_check import health_check_api
 from api.regrounding_recommendations import regrounding_recommendations_api
