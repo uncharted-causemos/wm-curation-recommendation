@@ -10,7 +10,7 @@ def _init_client():
     global _client
     _client = Elasticsearch(
         os.getenv('ES_HOST'),
-        http_auth=('', ''),  # TODO LATER: add authentication
+        http_auth=('', ''),
         scheme='http',
         port=os.getenv('ES_PORT'),
         timeout=60 * 10,

@@ -3,6 +3,8 @@ from flask import Blueprint, request, jsonify
 from helpers.api import recommendations_helper
 from helpers.es import es_recommendations_helper
 from services import regrounding_recommendations_service
+from werkzeug.exceptions import BadRequest
+
 
 regrounding_recommendations_api = Blueprint('regrounding_recommendations_api', __name__)
 
@@ -17,8 +19,8 @@ def get_recommendations():
     statement_ids = body['statement_ids']
     factor_reco_index_id = es_recommendations_helper.get_factor_recommendation_index_id(kb_index_id)
 
-    if num_recommendations > 10000:
-        raise AssertionError  # TODO: Fix
+    if num_recommendations > 10000:  # Max num recommendations allowed
+        raise BadRequest(description="num_recommendations must not exceed 10,000.")
 
     factor_doc = recommendations_helper.get_reco_doc(factor_text_original, factor_reco_index_id)
 
