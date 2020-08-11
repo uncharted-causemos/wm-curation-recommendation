@@ -4,8 +4,6 @@ import spacy
 import os
 from numpy import linalg as LA
 
-# TODO: Read in glove embeddings that Eidos uses
-
 
 def _init_embeddings():
     global _nlp
@@ -15,7 +13,6 @@ def _init_embeddings():
 
 
 def _init_lemmatizer():
-    # TODO: Should I be lemmatizing given that Eidos doesn't?
     global _lemmatizer
     _lemmatizer = Lemmatizer(_nlp.vocab.lookups)
 
