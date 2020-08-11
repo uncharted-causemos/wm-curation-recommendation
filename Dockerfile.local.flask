@@ -1,0 +1,20 @@
+FROM python:3.8-buster
+
+WORKDIR /app
+
+RUN mkdir /data
+
+COPY api/ ./api
+COPY helpers/ ./helpers
+COPY services ./services
+COPY app.py ./
+COPY requirements.txt ./
+COPY .env ./
+COPY data/wm_with_flattened_interventions_metadata.yml ./data/wm_with_flattened_interventions_metadata.yml
+
+RUN pip install -r requirements.txt
+
+ENV FLASK_APP "app:create_app"
+ENV WM_CURATION_RECOMMENDATIONS_ENV_FILE_PATH ".env"
+EXPOSE 5000
+ENTRYPOINT python -m flask run --host=0.0.0.0

@@ -27,6 +27,12 @@ To enter a docker container: `docker exec -it <container_id> bash`
 
 Note: If trying to access local host ES point variables in `.env` to `host.docker.internal`
 
+## Local (Non-Swarm):
+2. Build the container: `docker build -f Dockerfile.local.flask -t wmcr-service-local:latest .`
+3. Run the container: `docker run --name wmcr-service-local -d -p 5000:5000 -it wmcr-service-local:latest`
+
+## Swarm
+
 1. Create docker secrets: `docker secret create WM_CURATION_RECOMMENDATIONS_ENV_FILE .env`
 2. Build the container: `docker build -f Dockerfile.flask -t wmcr-service:latest .`
 3. Run the container: `docker service create --secret WM_CURATION_RECOMMENDATIONS_ENV_FILE -e WM_CURATION_RECOMMENDATIONS_ENV_FILE_PATH=/run/secrets/WM_CURATION_RECOMMENDATIONS_ENV_FILE --name wmcr-service -p 5000:5000 -t wmcr-service:latest`
