@@ -1,4 +1,3 @@
-import os
 from collections import deque
 from elasticsearch.helpers import parallel_bulk
 from services import embedding_service, es_service
