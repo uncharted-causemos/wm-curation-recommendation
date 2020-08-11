@@ -1,4 +1,5 @@
 import os
+from werkzeug.exceptions import BadRequest
 from services import es_service, ontology_service
 from helpers.es import es_recommendations_helper, es_kb_helper
 from scipy.stats import entropy
@@ -6,7 +7,11 @@ import numpy as np
 
 
 def get_reco_doc(text_original, index_id):
-    reco_doc = es_recommendations_helper.get_recommendation(index_id, text_original)
+    try:
+        reco_doc = es_recommendations_helper.get_recommendation(index_id, text_original)
+    except AssertionError as e:
+        raise BadRequest(description=e.args[0])
+
     clustering_vector_field_name = es_recommendations_helper.get_dim_vector_field_name(os.getenv('CLUSTERING_DIM'))
     reco_doc['vector'] = reco_doc[clustering_vector_field_name]
     return reco_doc
@@ -24,7 +29,6 @@ def compute_knn(query_doc, fields_to_include, query_filter, num_recommendations,
     es_client = es_service.get_client()
     data = es_client.search(
         index=index_id,
-        # TODO: Currently this is set to 1K because CauseMos will filter for visible graph (and potentially polarity). Also max number of docs in cluster is roughly 500
         size=num_recommendations,  # Max number of recommendations
         _source_includes=fields_to_include,
         body={

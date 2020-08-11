@@ -112,8 +112,7 @@ def get_cluster_id(recommendation_index_id, text_original):
 
     docs = data['hits']['hits']
     if len(docs) < 1:
-        raise AssertionError  # TODO: Fix
-
+        raise AssertionError(f'Unable to find doc with text_original: {text_original} in index: {recommendation_index_id}')
     return docs[0]['_source']['cluster_id']
 
 
@@ -178,6 +177,6 @@ def get_recommendation(recommendation_index_id, text_original):
 
     docs = data['hits']['hits']
     if len(docs) < 1:
-        raise AssertionError  # TODO: Fix
+        raise AssertionError(f'Unable to find doc with text_original: {text_original} in index: {recommendation_index_id}')
 
     return docs[0]['_source']

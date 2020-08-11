@@ -95,16 +95,13 @@ def _map_factor_source_to_concept_candidate(statement_doc):
     elif len(matched_queries) == 1 and matched_queries[0] == 'obj':
         factor_candidates = obj_candidates
         text_original = obj_text
-    elif len(matched_queries) == 2:
+    else:  # len(matched_queries) == 2:
         if len(subj_candidates) > len(obj_candidates):
             factor_candidates = subj_candidates
             text_original = subj_text
         else:
             factor_candidates = obj_candidates
             text_original = obj_text
-    else:
-        # This should never hit
-        raise AssertionError  # TODO: Fix
 
     return {
         'candidates': factor_candidates,
