@@ -48,7 +48,6 @@ if __name__ == '__main__':
     index = get_param(opts, "-i")
     factors = get_param(opts, "-f")
     statements = get_param(opts, "-s")
-
     # Imports are weird...
     try:
         from ingestor import process_kb
@@ -56,17 +55,18 @@ if __name__ == '__main__':
         from ingestor import compute_clusters
         from ingestor import es_setup
         from helpers.es import es_recommendations_helper
-    except Exception:
+    except Exception as e:
+        print(e)
         sys.exit(1)
 
     try:
         # Overwrite these if command line arguments are provided
-        kb_index_id = index or os.getenv('KB_INDEX_NAME')
+        kb_index_id = index or os.getenv('KB_INDEX_ID')
         delete_factor_reco_index_if_exists = factors or os.getenv('DELETE_FACTOR_RECOMMENDATION_INDEX_IF_EXISTS')
         delete_statement_reco_index_if_exists = statements or os.getenv('DELETE_STATEMENT_RECOMMENDATION_INDEX_IF_EXISTS')
 
-        factor_reco_index_id = es_recommendations_helper.get_factor_recommendation_index_name(kb_index_id)
-        statement_reco_index_id = es_recommendations_helper.get_statement_recommendation_index_name(kb_index_id)
+        factor_reco_index_id = es_recommendations_helper.get_factor_recommendation_index_id(kb_index_id)
+        statement_reco_index_id = es_recommendations_helper.get_statement_recommendation_index_id(kb_index_id)
 
         print("Processing entire KB into factor recommendations and statement recommendations...")
         print("=================================================================================")
@@ -115,7 +115,8 @@ if __name__ == '__main__':
                                         reco_index_id=statement_reco_index_id)
         print("=========================================================")
         print("Finished umap + hdbscan process for statement recommendations.")
-    except Exception:
+    except Exception as e:
+        print(e)
         sys.exit(1)
 
     sys.exit(0)
