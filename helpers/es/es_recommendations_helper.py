@@ -56,7 +56,7 @@ def map_vector(recommendations, dim):
     return list(map(_map, recommendations))
 
 
-def get_all_recommendations(recommendation_index_id, source_fields):
+def get_all_recommendations(source_fields, recommendation_index_id):
 
     def _map_reco_source(reco_doc):
         reco = reco_doc['_source']
@@ -92,7 +92,7 @@ def get_all_recommendations(recommendation_index_id, source_fields):
     return mapped_recos
 
 
-def get_cluster_id(recommendation_index_id, text_original):
+def get_cluster_id(text_original, recommendation_index_id):
     es_client = es_service.get_client()
     data = es_client.search(
         index=recommendation_index_id,
@@ -116,7 +116,7 @@ def get_cluster_id(recommendation_index_id, text_original):
     return docs[0]['_source']['cluster_id']
 
 
-def get_recommendations_in_same_cluster(recommendation_index_id, cluster_id, clustering_dim):
+def get_recommendations_in_same_cluster(cluster_id, clustering_dim, recommendation_index_id):
     vector_field_name = get_dim_vector_field_name(clustering_dim)
 
     def _map_source(reco_doc):
@@ -158,7 +158,7 @@ def get_recommendations_in_same_cluster(recommendation_index_id, cluster_id, clu
     return results
 
 
-def get_recommendation(recommendation_index_id, text_original):
+def get_recommendation(text_original, recommendation_index_id):
     es_client = es_service.get_client()
     data = es_client.search(
         index=recommendation_index_id,

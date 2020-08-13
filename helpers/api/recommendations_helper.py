@@ -6,9 +6,9 @@ from scipy.stats import entropy
 import numpy as np
 
 
-def get_reco_doc(text_original, index_id):
+def get_reco_doc(text_original, reco_index_id):
     try:
-        reco_doc = es_recommendations_helper.get_recommendation(index_id, text_original)
+        reco_doc = es_recommendations_helper.get_recommendation(text_original, reco_index_id)
     except AssertionError as e:
         raise BadRequest(description=e.args[0])
 
@@ -17,18 +17,18 @@ def get_reco_doc(text_original, index_id):
     return reco_doc
 
 
-def get_recommendations_in_cluster(cluster_id, index_id):
+def get_recommendations_in_cluster(cluster_id, reco_index_id):
     clustering_dim = os.getenv('CLUSTERING_DIM')
-    recommendations_in_cluster = es_recommendations_helper.get_recommendations_in_same_cluster(index_id, cluster_id, clustering_dim)
+    recommendations_in_cluster = es_recommendations_helper.get_recommendations_in_same_cluster(cluster_id, clustering_dim, reco_index_id)
     return recommendations_in_cluster
 
 
-def compute_knn(query_doc, fields_to_include, query_filter, num_recommendations, index_id):
+def compute_knn(query_doc, fields_to_include, query_filter, num_recommendations, reco_index_id):
     clustering_dim = os.getenv("CLUSTERING_DIM")
     vector_field_name = es_recommendations_helper.get_dim_vector_field_name(clustering_dim)
     es_client = es_service.get_client()
     data = es_client.search(
-        index=index_id,
+        index=reco_index_id,
         size=num_recommendations,  # Max number of recommendations
         _source_includes=fields_to_include,
         body={
