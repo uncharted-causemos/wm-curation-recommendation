@@ -92,30 +92,6 @@ def get_all_recommendations(source_fields, recommendation_index_id):
     return mapped_recos
 
 
-def get_cluster_id(text_original, recommendation_index_id):
-    es_client = es_service.get_client()
-    data = es_client.search(
-        index=recommendation_index_id,
-        size=1,
-        scroll='5m',
-        _source_includes=['cluster_id'],
-        body={
-            'query': {
-                'bool': {
-                    'filter': [
-                        {'term': {'text_original': text_original}}
-                    ]
-                }
-            }
-        }
-    )
-
-    docs = data['hits']['hits']
-    if len(docs) < 1:
-        raise AssertionError(f'Unable to find doc with text_original: {text_original} in index: {recommendation_index_id}')
-    return docs[0]['_source']['cluster_id']
-
-
 def get_recommendations_in_same_cluster(cluster_id, clustering_dim, recommendation_index_id):
     vector_field_name = get_dim_vector_field_name(clustering_dim)
 
