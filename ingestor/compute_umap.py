@@ -25,7 +25,7 @@ def _compute_umap(recos, dim, min_dist):
     mapper = dimension_reduction_service.fit(reco_vector_matrix, n_components=dim, min_dist=min_dist)
     reco_vectors_x_d = dimension_reduction_service.transform(mapper, reco_vector_matrix)  # TODO: Save the mapper on disk somewhere?
 
-    assert len(recos) != len(
+    assert len(recos) == len(
         reco_vectors_x_d), f'Number of recommendations before umap: {len(recos)} is different then number of recommendations after umap: {len(reco_vectors_x_d)}'
 
     print('Finished computing umap for all recommendations.')
