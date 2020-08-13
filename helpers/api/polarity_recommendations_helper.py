@@ -1,6 +1,5 @@
 from helpers.api import recommendations_helper
-from helpers.es import es_recommendations_helper
-from services import es_service
+from helpers.es import es_kb_helper, es_recommendations_helper
 
 
 def get_reco_doc(subj_factor_text_original, obj_factor_text_original, kb_index_id):
@@ -34,7 +33,7 @@ def _build_query_filter(statement_reco_doc, statement_ids, polarity, project_ind
                 ]
             }
         }
-    subj_obj_pairs = _get_subj_obj_pairs_for_statement_ids(statement_ids, polarity, project_index_id)
+    subj_obj_pairs = es_kb_helper.get_subj_obj_pairs_for_statement_ids(statement_ids, polarity, project_index_id)
     should_query = list(map(_map_should_query, subj_obj_pairs))
     query = {
         'bool': {
@@ -46,30 +45,3 @@ def _build_query_filter(statement_reco_doc, statement_ids, polarity, project_ind
         }
     }
     return query
-
-
-def _get_subj_obj_pairs_for_statement_ids(statement_ids, polarity, project_index_id):
-    def _map_source(statement):
-        return {
-            'subj_factor': statement['_source']['subj']['factor'],
-            'obj_factor': statement['_source']['obj']['factor']
-        }
-
-    es_client = es_service.get_client()
-    data = es_client.search(
-        index=project_index_id,
-        size=10000,  # Max number of recommendations allowed
-        _source_includes=['subj.factor', 'obj.factor'],
-        body={
-            'query': {
-                'bool': {
-                    'filter': [
-                        {'terms': {'id': statement_ids}},
-                        {'term': {'wm.statement_polarity': polarity}}
-                    ]
-                }
-            }
-        }
-    )
-
-    return list(map(_map_source, data['hits']['hits']))

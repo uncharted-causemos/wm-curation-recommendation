@@ -1,8 +1,7 @@
 import math
 from flask import Blueprint, request, jsonify
-from helpers.api import recommendations_helper
+from helpers.api import regrounding_recommendations_helper, recommendations_helper
 from helpers.es import es_recommendations_helper
-from services import regrounding_recommendations_service
 from werkzeug.exceptions import BadRequest
 
 
@@ -29,8 +28,8 @@ def get_recommendations():
 
     num_knn_recommendations = math.ceil(num_recommendations / 2.0)
     num_kl_nn_recommendations = math.floor(num_recommendations / 2.0)
-    knn = regrounding_recommendations_service.compute_knn(factor_doc, statement_ids, num_knn_recommendations, project_index_id, factor_reco_index_id)
-    kl_nn = regrounding_recommendations_service.compute_kl_divergence_nn(
+    knn = regrounding_recommendations_helper.compute_knn(factor_doc, statement_ids, num_knn_recommendations, project_index_id, factor_reco_index_id)
+    kl_nn = regrounding_recommendations_helper.compute_kl_divergence_nn(
         factor_doc, statement_ids, num_kl_nn_recommendations, project_index_id, factor_reco_index_id)
 
     recommended_factors = knn + kl_nn

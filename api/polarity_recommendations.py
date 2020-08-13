@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from services import polarity_recommendations_service
+from helpers.api import polarity_recommendations_helper
 from werkzeug.exceptions import BadRequest
 
 polarity_recommendations_api = Blueprint('polaritytext_original', __name__)
@@ -19,17 +19,17 @@ def get_recommendations():
     if num_recommendations > 10000:  # Max num recommendations allowed
         raise BadRequest(description="num_recommendations must not exceed 10,000.")
 
-    statement_doc = polarity_recommendations_service.get_reco_doc(subj_factor_text_original, obj_factor_text_original, kb_index_id)
+    statement_doc = polarity_recommendations_helper.get_reco_doc(subj_factor_text_original, obj_factor_text_original, kb_index_id)
 
     if statement_doc['cluster_id'] == -1:
         return _build_response([])
 
-    recommended_statements = polarity_recommendations_service.compute_knn(statement_doc,
-                                                                          statement_ids,
-                                                                          polarity,
-                                                                          num_recommendations,
-                                                                          project_index_id,
-                                                                          kb_index_id)
+    recommended_statements = polarity_recommendations_helper.compute_knn(statement_doc,
+                                                                         statement_ids,
+                                                                         polarity,
+                                                                         num_recommendations,
+                                                                         project_index_id,
+                                                                         kb_index_id)
     return _build_response(recommended_statements)
 
 

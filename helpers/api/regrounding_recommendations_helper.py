@@ -1,6 +1,5 @@
-from functools import reduce
 from helpers.api import recommendations_helper
-from services import es_service
+from helpers.es import es_kb_helper
 
 
 def compute_kl_divergence_nn(factor_reco_doc, statement_ids, num_recommendations, project_index_id, factor_reco_index_id):
@@ -29,7 +28,7 @@ def compute_knn(factor_reco_doc, statement_ids, num_recommendations, project_ind
 
 
 def _build_query_filter(factor_reco_doc, statement_ids, project_index_id):
-    factors = _get_factors_for_statement_ids(statement_ids, project_index_id)
+    factors = es_kb_helper.get_factors_for_statement_ids(statement_ids, project_index_id)
     query = {
         'bool': {
             'filter': [
@@ -39,32 +38,3 @@ def _build_query_filter(factor_reco_doc, statement_ids, project_index_id):
         }
     }
     return query
-
-
-def _get_factors_for_statement_ids(statement_ids, project_index_id):
-    def _map_source(statement):
-        return [
-            statement['_source']['subj']['factor'],
-            statement['_source']['obj']['factor']
-        ]
-
-    def _reduce_source(factors, subj_obj_pairs):
-        return factors + subj_obj_pairs
-
-    es_client = es_service.get_client()
-    data = es_client.search(
-        index=project_index_id,
-        size=10000,  # Max number of recommendations allowed
-        _source_includes=['subj.factor', 'obj.factor'],
-        body={
-            'query': {
-                'bool': {
-                    'filter': {
-                        'terms': {'id': statement_ids}
-                    }
-                }
-            }
-        }
-    )
-
-    return list(reduce(_reduce_source, map(_map_source, data['hits']['hits'])))
