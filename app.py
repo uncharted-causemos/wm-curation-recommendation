@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 import os
 
 # Load env before loading app specific files
-env_file_path = os.getenv('WM_CURATION_RECOMMENDATIONS_ENV_FILE_PATH')
+env_file_path = '.env'
 load_dotenv(env_file_path, override=True)
 
 from api.health_check import health_check_api
