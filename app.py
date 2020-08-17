@@ -3,8 +3,7 @@ from dotenv import load_dotenv
 import os
 
 # Load env before loading app specific files
-env_file_path = '.env'
-load_dotenv(env_file_path, override=True)
+load_dotenv(override=True)
 
 from api.health_check import health_check_api
 from api.regrounding_recommendations import regrounding_recommendations_api
