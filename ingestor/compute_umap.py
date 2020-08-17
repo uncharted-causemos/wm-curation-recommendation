@@ -2,11 +2,12 @@ from elasticsearch.helpers import bulk
 from services import dimension_reduction_service, es_service
 from helpers.es import es_recommendations_helper
 from helpers import utils
+import numpy as np
 
 
-def compute_and_update(dim_start, dim_end, min_dist, reco_index_id):
+def compute_and_update(dim_start, dim_end, min_dist, n_neighbors, reco_index_id):
     deduped_recommendations = _get_all_recommendations(dim_start, reco_index_id)
-    vectors_x_d = _compute_umap(deduped_recommendations, dim_end, min_dist)
+    vectors_x_d = _compute_umap(deduped_recommendations, dim_end, min_dist, n_neighbors)
     _update_recommendations(deduped_recommendations, vectors_x_d, dim_end, reco_index_id)
 
 
@@ -18,11 +19,18 @@ def _get_all_recommendations(dim, reco_index_id):
     return recos
 
 
-def _compute_umap(recos, dim, min_dist):
+def _compute_umap(recos, dim, min_dist, n_neighbors):
     print('Computing umap for all recommendations.')
     reco_vector_matrix = utils.build_reco_vector_matrix(recos)
 
-    mapper = dimension_reduction_service.fit(reco_vector_matrix, n_components=dim, min_dist=min_dist)
+    # UMAP can't run with n_neighbors < 2, and UMAP forces n_neighbors = min(n_neighbors, data.shape[0] - 1)
+    # This allows for easy testing on small indicies if need be without constantly throwing errors to the caller.
+    # It's assumed that any valuable data transformations will always have a data size larger than the nominal values of n_neighbors~=15.
+    # In this way, we'll still be able to generate recommendations and the rest of CauseMos can continue to be tested.
+    if reco_vector_matrix.shape[0] - 1 < 2:
+        return np.full((reco_vector_matrix.shape[0], dim), 0)
+
+    mapper = dimension_reduction_service.fit(reco_vector_matrix, n_components=dim, min_dist=min_dist, n_neighbors=n_neighbors)
     reco_vectors_x_d = dimension_reduction_service.transform(mapper, reco_vector_matrix)  # TODO: Save the mapper on disk somewhere?
 
     assert len(recos) == len(

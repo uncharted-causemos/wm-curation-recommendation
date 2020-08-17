@@ -84,6 +84,7 @@ if __name__ == '__main__':
         compute_umap.compute_and_update(dim_start=300,
                                         dim_end=20,
                                         min_dist=0.01,
+                                        n_neighbors=15,
                                         reco_index_id=factor_reco_index_id)
         compute_clusters.compute_and_update(dim=20,
                                             min_cluster_size=15,
@@ -93,6 +94,7 @@ if __name__ == '__main__':
         compute_umap.compute_and_update(dim_start=20,
                                         dim_end=2,
                                         min_dist=0.01,
+                                        n_neighbors=15,
                                         reco_index_id=factor_reco_index_id)
 
         print("======================================================")
@@ -103,6 +105,7 @@ if __name__ == '__main__':
         compute_umap.compute_and_update(dim_start=300,
                                         dim_end=20,
                                         min_dist=0.01,
+                                        n_neighbors=15,
                                         reco_index_id=statement_reco_index_id)
         compute_clusters.compute_and_update(dim=20,
                                             min_cluster_size=15,
@@ -112,6 +115,7 @@ if __name__ == '__main__':
         compute_umap.compute_and_update(dim_start=20,
                                         dim_end=2,
                                         min_dist=0.01,
+                                        n_neighbors=15,
                                         reco_index_id=statement_reco_index_id)
         print("=========================================================")
         print("Finished umap + hdbscan process for statement recommendations.")

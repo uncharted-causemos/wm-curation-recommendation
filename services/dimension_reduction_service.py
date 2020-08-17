@@ -1,7 +1,7 @@
 from umap import UMAP
 
 
-def fit(data, n_components, min_dist):
+def fit(data, n_components, min_dist, n_neighbors):
     # Note, there is a hard limit that the data must have more than 2 points, otherwise UMAP will fail.
 
     # UMAP has a limitation on using spectral initialization only when n_components < data.shape
@@ -10,7 +10,8 @@ def fit(data, n_components, min_dist):
         init = 'random'
     else:
         init = 'spectral'
-    return UMAP(n_components=n_components, min_dist=min_dist, init=init).fit(data)
+
+    return UMAP(n_components=n_components, min_dist=min_dist, n_neighbors=n_neighbors, init=init).fit(data)
 
 
 def transform(mapper, data):
