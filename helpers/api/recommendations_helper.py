@@ -36,7 +36,7 @@ def compute_knn(query_doc, fields_to_include, query_filter, num_recommendations,
                 'script_score': {
                     'query': query_filter,
                     'script': {
-                        'source': f"cosineSimilarity(params.query_vector, '{vector_field_name}')",
+                        'source': f"Math.max(1 - cosineSimilarity(params.query_vector, '{vector_field_name}'), 0)",
                         'params': {'query_vector': query_doc[vector_field_name]}
                     }
                 }
@@ -58,9 +58,13 @@ def compute_kl_divergence(query_doc, all_recos, statement_ids, num_recommendatio
     factor_doc_concept_candidate_dist = np.array(_map_concept_candidates_to_distribution(factor_doc_concept_candidate))
 
     kl_divergence_scores = np.array([entropy(factor_doc_concept_candidate_dist, f_dist) for f_dist in factor_concept_candidate_distributions])
+    kl_divergence_scores = kl_divergence_scores / np.linalg.norm(kl_divergence_scores)
+
     sorted_indices = np.argsort(kl_divergence_scores)
     factors_sorted = np.array(factors_concept_candidates)[sorted_indices]
-    return factors_sorted[:num_recommendations]
+    kl_divergence_scores_sorted = kl_divergence_scores[sorted_indices]
+
+    return factors_sorted[:num_recommendations], kl_divergence_scores_sorted[:num_recommendations]
 
 
 def _map_concept_candidates_to_distribution(factor_concept_candidate):

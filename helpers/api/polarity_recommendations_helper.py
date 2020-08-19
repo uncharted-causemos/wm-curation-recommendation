@@ -13,7 +13,8 @@ def compute_knn(statement_reco_doc, statement_ids, polarity, num_recommendations
     def _map_knn_results(statement_doc):
         return {
             'subj_factor': statement_doc['_source']['subj_factor'],
-            'obj_factor': statement_doc['_source']['obj_factor']
+            'obj_factor': statement_doc['_source']['obj_factor'],
+            'score': statement_doc['_score']
         }
     query_filter = _build_query_filter(statement_reco_doc, statement_ids, polarity, project_index_id)
     statement_reco_index_id = es_recommendations_helper.get_statement_recommendation_index_id(kb_index_id)
