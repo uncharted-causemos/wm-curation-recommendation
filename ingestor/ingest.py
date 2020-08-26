@@ -62,8 +62,8 @@ if __name__ == '__main__':
     try:
         # Overwrite these if command line arguments are provided
         kb_index_id = index or os.getenv('KB_INDEX_ID')
-        delete_factor_reco_index_if_exists = factors or os.getenv('DELETE_FACTOR_RECOMMENDATION_INDEX_IF_EXISTS')
-        delete_statement_reco_index_if_exists = statements or os.getenv('DELETE_STATEMENT_RECOMMENDATION_INDEX_IF_EXISTS')
+        delete_factor_reco_index_if_exists = factors or (os.getenv('DELETE_FACTOR_RECOMMENDATION_INDEX_IF_EXISTS') == 'True')
+        delete_statement_reco_index_if_exists = statements or (os.getenv('DELETE_STATEMENT_RECOMMENDATION_INDEX_IF_EXISTS') == 'True')
 
         factor_reco_index_id = es_recommendations_helper.get_factor_recommendation_index_id(kb_index_id)
         statement_reco_index_id = es_recommendations_helper.get_statement_recommendation_index_id(kb_index_id)
