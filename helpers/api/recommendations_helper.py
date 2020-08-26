@@ -3,6 +3,7 @@ from werkzeug.exceptions import BadRequest
 from services import es_service
 from helpers.es import es_recommendations_helper, es_kb_helper
 from scipy.stats import entropy
+from sklearn.neighbors import KDTree
 import numpy as np
 
 
@@ -24,28 +25,45 @@ def get_recommendations_in_cluster(cluster_id, reco_index_id):
 
 
 def compute_knn(query_doc, fields_to_include, query_filter, num_recommendations, reco_index_id):
+    # Commenting out for now but once we have dense vectors back in we can return to this.
+    # data = es_client.search(
+    #     index=reco_index_id,
+    #     size=num_recommendations,  # Max number of recommendations
+    #     _source_includes=fields_to_include,
+    #     body={
+    #         'query': {
+    #             'script_score': {
+    #                 'query': query_filter,
+    #                 'script': {
+    #                     'source': f"Math.max(1 - cosineSimilarity(params.query_vector, '{vector_field_name}'), 0)",
+    #                     'params': {'query_vector': query_doc[vector_field_name]}
+    #                 }
+    #             }
+    #         }
+    #     }
+    # )
+
     clustering_dim = os.getenv("CLUSTERING_DIM")
     vector_field_name = es_recommendations_helper.get_dim_vector_field_name(clustering_dim)
     es_client = es_service.get_client()
     data = es_client.search(
         index=reco_index_id,
-        size=num_recommendations,  # Max number of recommendations
-        _source_includes=fields_to_include,
+        size=10000,
+        _source_includes=fields_to_include + [vector_field_name],
         body={
-            'query': {
-                'script_score': {
-                    'query': query_filter,
-                    'script': {
-                        'source': f"Math.max(1 - cosineSimilarity(params.query_vector, '{vector_field_name}'), 0)",
-                        'params': {'query_vector': query_doc[vector_field_name]}
-                    }
-                }
-            }
+            'query': query_filter
         }
     )
 
+    docs = np.array(data['hits']['hits'])
+    vectors = np.array(list(map(lambda x: x['_source'][vector_field_name], docs)))
+    nn_dist, nn_indices = KDTree(vectors, metric='euclidean', leaf_size=100).query(
+        np.array(query_doc[vector_field_name]).reshape(1, -1),
+        k=min(num_recommendations, vectors.shape[0])
+    )
+
     print('Finished fetching all recommendations for statement')
-    return data['hits']['hits']
+    return docs[nn_indices[0]].tolist()
 
 
 def compute_kl_divergence(query_doc, all_recos, statement_ids, num_recommendations, project_index_id):

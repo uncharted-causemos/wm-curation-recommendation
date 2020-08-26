@@ -5,10 +5,10 @@ _factor_recommendation_index_mapping = {
     'properties': {
         'text_original': {'type': 'keyword'},
         'text_cleaned': {'type': 'keyword'},
-        'cluster_id': {'type': 'integer'},
-        'vector_300_d': {'type': 'dense_vector', 'dims': 300},
-        'vector_20_d': {'type': 'dense_vector', 'dims': 20},
-        'vector_2_d': {'type': 'dense_vector', 'dims': 2}
+        'vector_300_d': {'type': 'float'},
+        'vector_20_d': {'type': 'float'},
+        'vector_2_d': {'type': 'float'},
+        'cluster_id': {'type': 'integer'}
     }
 }
 
@@ -17,9 +17,9 @@ _statement_recommendation_index_mapping = {
         'text_original': {'type': 'keyword'},
         'text_cleaned': {'type': 'keyword'},
         'cluster_id': {'type': 'integer'},
-        'vector_300_d': {'type': 'dense_vector', 'dims': 300},
-        'vector_20_d': {'type': 'dense_vector', 'dims': 20},
-        'vector_2_d': {'type': 'dense_vector', 'dims': 2},
+        'vector_300_d': {'type': 'float'},
+        'vector_20_d': {'type': 'float'},
+        'vector_2_d': {'type': 'float'},
         'subj_factor': {'type': 'keyword'},
         'obj_factor': {'type': 'keyword'}
     }
