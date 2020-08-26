@@ -1,6 +1,6 @@
 import os
 from werkzeug.exceptions import BadRequest
-from services import es_service, ontology_service
+from services import es_service
 from helpers.es import es_recommendations_helper, es_kb_helper
 from scipy.stats import entropy
 import numpy as np
@@ -52,10 +52,11 @@ def compute_kl_divergence(query_doc, all_recos, statement_ids, num_recommendatio
     text_originals = list(map(lambda x: x['text_original'], all_recos))
 
     factors_concept_candidates = es_kb_helper.get_concept_candidates_for_all_factors(text_originals, statement_ids, project_index_id)
-    factor_concept_candidate_distributions = np.array(list(map(_map_concept_candidates_to_distribution, factors_concept_candidates)))
-
     factor_doc_concept_candidate = es_kb_helper.get_concept_candidates_for_factor(query_doc['text_original'], statement_ids, project_index_id)
-    factor_doc_concept_candidate_dist = np.array(_map_concept_candidates_to_distribution(factor_doc_concept_candidate))
+
+    concepts = _get_all_concepts_in_candidates(factors_concept_candidates + [factor_doc_concept_candidate])
+    factor_concept_candidate_distributions = np.array(list(map(_map_concept_candidates_to_distribution(concepts), factors_concept_candidates)))
+    factor_doc_concept_candidate_dist = np.array(_map_concept_candidates_to_distribution(concepts)(factor_doc_concept_candidate))
 
     kl_divergence_scores = np.array([entropy(factor_doc_concept_candidate_dist, f_dist) for f_dist in factor_concept_candidate_distributions])
     sorted_indices = np.argsort(kl_divergence_scores)
@@ -63,10 +64,18 @@ def compute_kl_divergence(query_doc, all_recos, statement_ids, num_recommendatio
     return factors_sorted[:num_recommendations]
 
 
-def _map_concept_candidates_to_distribution(factor_concept_candidate):
-    concept_names = ontology_service.get_concept_names()
-    concept_dist = np.full(len(concept_names), 0.0001)
-    for candidate in factor_concept_candidate['candidates']:
-        candidate_idx = concept_names.index(candidate['name'])
-        concept_dist[candidate_idx] = candidate['score']
-    return concept_dist
+def _get_all_concepts_in_candidates(factor_docs):
+    concepts = list(map(lambda x: x['candidates'], factor_docs))
+    concepts = [item for sublist in concepts for item in sublist]
+    concepts = list(set(list(map(lambda x: x['name'], concepts))))
+    return concepts
+
+
+def _map_concept_candidates_to_distribution(concepts):
+    def _map(factor_concept_candidate):
+        concept_dist = np.full(len(concepts), 0.0001)
+        for candidate in factor_concept_candidate['candidates']:
+            candidate_idx = concepts.index(candidate['name'])
+            concept_dist[candidate_idx] = candidate['score']
+        return concept_dist
+    return _map
