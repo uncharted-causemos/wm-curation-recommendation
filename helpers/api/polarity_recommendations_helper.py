@@ -10,17 +10,18 @@ def get_reco_doc(subj_factor_text_original, obj_factor_text_original, kb_index_i
 
 
 def compute_knn(statement_reco_doc, statement_ids, polarity, num_recommendations, project_index_id, kb_index_id):
-    def _map_knn_results(statement_doc):
+    def _map_knn_results(statement_doc, score):
         return {
             'subj_factor': statement_doc['_source']['subj_factor'],
             'obj_factor': statement_doc['_source']['obj_factor'],
-            'score': statement_doc['_score']
+            'score': score
         }
     query_filter = _build_query_filter(statement_reco_doc, statement_ids, polarity, project_index_id)
     statement_reco_index_id = es_recommendations_helper.get_statement_recommendation_index_id(kb_index_id)
     fields_to_include = ['subj_factor', 'obj_factor']
-    knn = recommendations_helper.compute_knn(statement_reco_doc, fields_to_include, query_filter, num_recommendations, statement_reco_index_id)
-    knn = list(map(_map_knn_results, knn))
+    knn_factors, knn_scores = recommendations_helper.compute_knn(
+        statement_reco_doc, fields_to_include, query_filter, num_recommendations, statement_reco_index_id)
+    knn = list(map(_map_knn_results, knn_factors, knn_scores))
     return knn
 
 
