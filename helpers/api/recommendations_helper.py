@@ -57,7 +57,8 @@ def compute_knn(query_doc, fields_to_include, query_filter, num_recommendations,
 
     docs = np.array(data['hits']['hits'])
     vectors = np.array(list(map(lambda x: x['_source'][vector_field_name], docs)))
-    nn_dist, nn_indices = KDTree(vectors, metric='euclidean', leaf_size=100).query(
+    kd_tree = KDTree(vectors, metric='euclidean', leaf_size=100)
+    nn_dist, nn_indices = kd_tree.query(
         np.array(query_doc[vector_field_name]).reshape(1, -1),
         k=min(num_recommendations, vectors.shape[0])
     )
@@ -77,7 +78,8 @@ def compute_kl_divergence(query_doc, all_recos, statement_ids, num_recommendatio
     factor_doc_concept_candidate_dist = np.array(_map_concept_candidates_to_distribution(concepts)(factor_doc_concept_candidate))
 
     kl_divergence_scores = np.array([entropy(factor_doc_concept_candidate_dist, f_dist) for f_dist in factor_concept_candidate_distributions])
-    kl_divergence_scores = kl_divergence_scores / np.max(kl_divergence_scores) if np.max(kl_divergence_scores) > 0 else kl_divergence_scores
+    kl_divergence_scores = kl_divergence_scores / \
+        np.max(kl_divergence_scores) if (kl_divergence_scores.shape[0] > 0 and np.max(kl_divergence_scores) > 0) else kl_divergence_scores
 
     sorted_indices = np.argsort(kl_divergence_scores)
     factors_sorted = np.array(factors_concept_candidates)[sorted_indices]
