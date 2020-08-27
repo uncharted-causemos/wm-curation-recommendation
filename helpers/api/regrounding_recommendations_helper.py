@@ -13,21 +13,21 @@ def compute_kl_divergence_nn(factor_reco_doc, statement_ids, num_recommendations
     factors_in_cluster = recommendations_helper.get_recommendations_in_cluster(factor_reco_doc['cluster_id'], factor_reco_index_id)
     kl_nn_factors, kl_nn_scores = recommendations_helper.compute_kl_divergence(
         factor_reco_doc, factors_in_cluster, statement_ids, num_recommendations, project_index_id)
-    kl_nn = list(map(_map_kl_nn_results, kl_nn_factors.flatten().tolist(), kl_nn_scores.tolist()))
+    kl_nn = list(map(_map_kl_nn_results, kl_nn_factors, kl_nn_scores))
     return kl_nn
 
 
 def compute_knn(factor_reco_doc, statement_ids, num_recommendations, project_index_id, factor_reco_index_id):
-    def _map_knn_results(f):
+    def _map_knn_results(factor, score):
         return {
-            'factor': f['_source']['text_original'],
-            'score': f['_score']
+            'factor': factor['_source']['text_original'],
+            'score': score
         }
 
     fields_to_include = ['text_original']
     query_filter = _build_query_filter(factor_reco_doc, statement_ids, project_index_id)
-    knn = recommendations_helper.compute_knn(factor_reco_doc, fields_to_include, query_filter, num_recommendations, factor_reco_index_id)
-    knn = list(map(_map_knn_results, knn))
+    knn_factors, knn_scores = recommendations_helper.compute_knn(factor_reco_doc, fields_to_include, query_filter, num_recommendations, factor_reco_index_id)
+    knn = list(map(_map_knn_results, knn_factors, knn_scores))
     return knn
 
 
@@ -51,7 +51,8 @@ def combine_results(knn_results, kl_nn_results):
     for factor, scores in factor_scores_mapping.items():
         combined_results.append({
             'factor': factor,
-            'score': statistics.mean(scores) + 1 if len(scores) > 1 else scores[0]
+            # This is to make sure that scores found using both heuristics have lower distance and so are higher rated
+            'score': statistics.mean(scores) if len(scores) > 1 else scores[0] + 1
         })
 
     return combined_results

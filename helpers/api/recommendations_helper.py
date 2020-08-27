@@ -63,7 +63,7 @@ def compute_knn(query_doc, fields_to_include, query_filter, num_recommendations,
     )
 
     print('Finished fetching all recommendations for statement')
-    return docs[nn_indices[0]].tolist()
+    return docs[nn_indices.flatten()].tolist(), nn_dist.flatten().tolist()
 
 
 def compute_kl_divergence(query_doc, all_recos, statement_ids, num_recommendations, project_index_id):
@@ -77,13 +77,13 @@ def compute_kl_divergence(query_doc, all_recos, statement_ids, num_recommendatio
     factor_doc_concept_candidate_dist = np.array(_map_concept_candidates_to_distribution(concepts)(factor_doc_concept_candidate))
 
     kl_divergence_scores = np.array([entropy(factor_doc_concept_candidate_dist, f_dist) for f_dist in factor_concept_candidate_distributions])
-    kl_divergence_scores = kl_divergence_scores / np.linalg.norm(kl_divergence_scores)
+    kl_divergence_scores = kl_divergence_scores / np.max(kl_divergence_scores) if np.max(kl_divergence_scores) > 0 else kl_divergence_scores
 
     sorted_indices = np.argsort(kl_divergence_scores)
     factors_sorted = np.array(factors_concept_candidates)[sorted_indices]
     kl_divergence_scores_sorted = kl_divergence_scores[sorted_indices]
 
-    return factors_sorted[:num_recommendations], kl_divergence_scores_sorted[:num_recommendations]
+    return factors_sorted[:num_recommendations].flatten().tolist(), kl_divergence_scores_sorted[:num_recommendations].tolist()
 
 
 def _get_all_concepts_in_candidates(factor_docs):
