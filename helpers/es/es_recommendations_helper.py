@@ -139,7 +139,6 @@ def get_recommendation(text_original, recommendation_index_id):
     data = es_client.search(
         index=recommendation_index_id,
         size=1,
-        scroll='5m',
         body={
             'query': {
                 'bool': {
