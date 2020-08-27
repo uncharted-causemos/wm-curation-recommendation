@@ -22,6 +22,7 @@ def get_recommendations():
     statement_doc = polarity_recommendations_helper.get_reco_doc(subj_factor_text_original, obj_factor_text_original, kb_index_id)
 
     if statement_doc['cluster_id'] == -1:
+        print("Cluster ID of query_document is -1. Returning with no recommendations.")
         return _build_response([])
 
     recommended_statements = polarity_recommendations_helper.compute_knn(statement_doc,

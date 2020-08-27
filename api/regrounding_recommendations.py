@@ -24,6 +24,7 @@ def get_recommendations():
     factor_doc = recommendations_helper.get_reco_doc(factor_text_original, factor_reco_index_id)
 
     if factor_doc['cluster_id'] == -1:
+        print("Cluster ID of query_document is -1. Returning with no recommendations.")
         return _build_response([])
 
     num_knn_recommendations = math.ceil(num_recommendations / 2.0)
