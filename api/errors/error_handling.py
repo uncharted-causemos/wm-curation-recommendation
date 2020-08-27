@@ -13,7 +13,7 @@ def handle_exception(error):
         'error': {
             'type': error.__class__.__name__,
             'message': message,
-            'description': error.description
+            'description': error.description if hasattr(error, 'description') else ''
         }
     }
     print(f'The server threw an exception with message: {response}')
