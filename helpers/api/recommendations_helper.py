@@ -49,7 +49,7 @@ def compute_knn(query_doc, fields_to_include, query_filter, num_recommendations,
     data = es_client.search(
         index=reco_index_id,
         size=10000,
-        _source_includes=fields_to_include + [vector_field_name],
+        _source_includes=fields_to_include + [vector_field_name, 'text_original'],
         body={
             'query': query_filter
         }
@@ -60,11 +60,15 @@ def compute_knn(query_doc, fields_to_include, query_filter, num_recommendations,
     kd_tree = KDTree(vectors, metric='euclidean', leaf_size=100)
     nn_dist, nn_indices = kd_tree.query(
         np.array(query_doc[vector_field_name]).reshape(1, -1),
-        k=min(num_recommendations, vectors.shape[0])
+        k=min(num_recommendations + 1, vectors.shape[0])  # adding 1 to num_recommendations because we won't be returning the query itself
     )
 
+    nn_docs = docs[nn_indices.flatten()]
+    nn_dist = nn_dist.flatten()
+    non_query_indices = [i for i, v in enumerate(nn_docs) if v['_source']['text_original'] != query_doc['text_original']]
+
     print('Finished fetching all recommendations for statement')
-    return docs[nn_indices.flatten()].tolist(), nn_dist.flatten().tolist()
+    return nn_docs[non_query_indices].tolist(), nn_dist[non_query_indices].tolist()  # Filtering out the query document itself
 
 
 def compute_kl_divergence(query_doc, all_recos, statement_ids, num_recommendations, project_index_id):
@@ -85,7 +89,11 @@ def compute_kl_divergence(query_doc, all_recos, statement_ids, num_recommendatio
     factors_sorted = np.array(factors_concept_candidates)[sorted_indices]
     kl_divergence_scores_sorted = kl_divergence_scores[sorted_indices]
 
-    return factors_sorted[:num_recommendations].flatten().tolist(), kl_divergence_scores_sorted[:num_recommendations].tolist()
+    non_query_indices = [i for i, v in enumerate(factors_sorted) if v['text_original'] != query_doc['text_original']]
+    factor_kl_nn = factors_sorted[non_query_indices][:num_recommendations].flatten().tolist()
+    factor_kl_scores = kl_divergence_scores_sorted[non_query_indices][:num_recommendations].tolist()
+
+    return factor_kl_nn, factor_kl_scores  # Filtering out the query document itself
 
 
 def _get_all_concepts_in_candidates(factor_docs):
