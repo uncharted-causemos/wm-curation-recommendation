@@ -1,0 +1,60 @@
+version: "3.4"
+
+services:
+  redis:
+    image: "redis:5.0.4-stretch"
+    restart: "${DOCKER_RESTART_POLICY:-unless-stopped}"
+    stop_grace_period: "${DOCKER_STOP_GRACE_PERIOD:-3s}"
+    volumes:
+      - "redis:/data"
+
+  app:
+    build:
+      context: "."
+      args:
+        - "FLASK_ENV=${FLASK_ENV:-development}"
+    environment:
+      C_FORCE_ROOT: "true"
+      CELERY_BROKER_URL: "redis://redis:6379"
+      CELERY_BACKEND: "redis://redis:6379"
+      ES_HOST: "${ES_HOST}"
+      ES_PORT: "${ES_PORT}"
+      NLP_FILE_PATH: "${NLP_FILE_PATH}"
+      FLASK_HOST: "0.0.0.0"
+    healthcheck:
+      test: "${DOCKER_HEALTHCHECK_TEST:-curl 127.0.0.1:5000/}"
+      interval: "60s"
+      timeout: "3s"
+      start_period: "5s"
+      retries: 3
+    links:
+      - "redis"
+    depends_on:
+      - "redis"
+    ports:
+      - "${DOCKER_WEB_PORT:-127.0.0.1:5000}:5000"
+    volumes:
+      - "${DOCKER_WEB_VOLUME:-./data:/app/data}"
+
+  celery_worker:
+    build:
+      context: "."
+      args:
+        - "FLASK_ENV=${FLASK_ENV:-development}"
+    environment:
+      C_FORCE_ROOT: "true"
+      CELERY_BROKER_URL: "redis://redis:6379"
+      CELERY_BACKEND: "redis://redis:6379"
+      ES_HOST: "${ES_HOST}"
+      ES_PORT: "${ES_PORT}"
+      NLP_FILE_PATH: "${NLP_FILE_PATH}"
+    links:
+      - "redis"
+    depends_on:
+      - "redis"
+    command: celery worker -A web.worker.celery --loglevel=info
+    volumes:
+      - "${DOCKER_WEB_VOLUME:-./data:/app/data}"
+
+volumes:
+  redis: {}
