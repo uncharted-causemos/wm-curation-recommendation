@@ -12,3 +12,5 @@ python-dotenv
 flake8
 elasticsearch  
 pytest
+celery
+redis

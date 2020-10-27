@@ -1,3 +1,6 @@
 .venv/
 .vscode/
 data/en_core_web*
+.git
+.dockerignore
+test/*
