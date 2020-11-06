@@ -1,4 +1,7 @@
 import os
+# Keeping this right at the top so env is loaded before anything else runs
+from dotenv import load_dotenv, find_dotenv
+load_dotenv(find_dotenv(), override=True)
 
 from elastic.elastic import Elastic
 

@@ -20,6 +20,7 @@ ENV FLASK_ENV="${FLASK_ENV}"
 ENV PYTHONUNBUFFERED="true"
 
 COPY ./src ./
+COPY ./.env ./
 
 EXPOSE 5000
 

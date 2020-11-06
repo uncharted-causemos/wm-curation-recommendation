@@ -11,8 +11,8 @@ Currently only able to run the app in a docker image. Ingest is run manually.
 1. Perform steps in `Environment Setup` section (NB: If you wish to run the server locally you'll have to set `NLP_FILE_PATH` relative to `/src`)
 2. There are 2 options depending on if you want to run locally or via docker.
     1. Run `docker-compose up --build` in the root of this project to run it via docker
-    2. Run `docker build -t <image_name> .` and then `docker run -p 5000:5000 <image_name>` to run as a stand alone docker image. NOTE: If you're not running with docker swarm on our production environment, you'll need to modify the Dockerfile to include ES_HOST and ES_PORT.
-    3. Run `export $(grep -v '^#' ../.env | xargs)` followed by `export FLASK_APP="src/app:create_app"`, and finally `python3 -m flask run --host=127.0.0.1` to run the server locally
+    2. Run `docker build -f Dockerfile.local -t <image_name> .` and then `docker run -p 5000:5000 <image_name>` to run as a stand alone docker image
+    3. Run `export FLASK_APP="src/app:create_app"` followed by `python3 -m flask run --host=127.0.0.1` to run the server locally
 
 # Run Ingestion (Locally):
 1. `cd scripts`
