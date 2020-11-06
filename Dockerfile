@@ -16,9 +16,8 @@ RUN apt-get update \
     && apt-get clean
 
 ARG FLASK_ENV="production"
-ENV FLASK_ENV="${FLASK_ENV}" \
-    PYTHONUNBUFFERED="true"
-ENV FLASK_HOST="0.0.0.0"
+ENV FLASK_ENV="${FLASK_ENV}"
+ENV PYTHONUNBUFFERED="true"
 
 COPY ./src ./
 
