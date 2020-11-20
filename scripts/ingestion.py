@@ -1,8 +1,10 @@
+import os
 import argparse
 import sys
 import traceback
 
-sys.path.insert(0, '../src')
+dir_path = os.path.dirname(os.path.realpath(__file__))
+sys.path.insert(0, dir_path + '/../src')
 
 
 def ingest(nlp, remove_factors, remove_statements):
@@ -28,6 +30,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    print(f'Debugging: {args.url}')
+
     # Exit if the user did not provide the correct inputs
     if not (args.url and args.index):
         parser.print_help()
@@ -41,15 +45,15 @@ if __name__ == '__main__':
         traceback.print_exc(e)
         sys.exit(1)
 
-    ingestor = ingest(args.nlp, args.factors, args.statements)
+    ingestor = ingest(args.nlp.strip(), args.factors, args.statements)
 
     # Create ES connection from args
     es_args = args.url.rsplit(':', 1)
-    es = Elastic(es_args[0], es_args[1])
+    es = Elastic(es_args[0].strip(), es_args[1].strip())
 
     try:
         print(f'Generating recommendations for index: {args.index}')
-        ingestor(args.index, es)
+        ingestor(args.index.strip(), es)
     except Exception as e:
         traceback.print_exc(e)
         sys.exit(1)
