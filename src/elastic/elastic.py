@@ -7,9 +7,10 @@ es_bulk_config = {
     "chunk_size": 10000,
     "max_chunk_bytes": 5000000,
     "max_retries": 8,
-    "initial_backoff": 0.5,
-    "max_backoff": 1000,
+    "initial_backoff": 3,
+    "max_backoff": 300,
     "raise_on_error": False,
+    "timeout": "60s"
 }
 
 
@@ -72,7 +73,7 @@ class Elastic:
         """
         Query ES with scrolling
         """
-        search_response = self.search(index, body, scroll=scroll,  **kwargs)
+        search_response = self.search(index, body, scroll=scroll, **kwargs)
 
         # Get the Scroll ID from the response
         scroll_id = search_response['_scroll_id']

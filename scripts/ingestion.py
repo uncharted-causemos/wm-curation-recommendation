@@ -1,3 +1,5 @@
+
+import time
 import os
 import argparse
 import sys
@@ -45,11 +47,12 @@ if __name__ == '__main__':
         traceback.print_exc(e)
         sys.exit(1)
 
+    start_time = time.time()
     ingestor = ingest(args.nlp.strip(), args.factors, args.statements)
 
     # Create ES connection from args
     es_args = args.url.rsplit(':', 1)
-    es = Elastic(es_args[0].strip(), es_args[1].strip())
+    es = Elastic(es_args[0].strip(), es_args[1].strip(), timeout=60)
 
     try:
         print(f'Generating recommendations for index: {args.index}')
@@ -59,4 +62,5 @@ if __name__ == '__main__':
         sys.exit(1)
 
     print(f'Finished generating recommendations for index: {args.index}')
+    print(f'Ingesting took {time.time() - start_time} seconds.')
     sys.exit(0)

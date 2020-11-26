@@ -14,7 +14,7 @@ def create_application():
     """
     app = Flask("__name__",)
     app.config.from_object(Config)
-
+    
     # Logging after every request.
     @app.after_request
     def after_request(response):

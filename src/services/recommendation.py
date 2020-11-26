@@ -111,7 +111,7 @@ def recommendations(index, nlp, remove_factors, remove_statements, es=None):
                 'match_all': {}
             }
         }
-        statements = es_client.search_with_scrolling(index, body, '1000m')
+        statements = es_client.search_with_scrolling(index, body, '1000m', size=10000)
         return KnowledgeBase(statements, nlp)
 
     # Get the knowledge base
