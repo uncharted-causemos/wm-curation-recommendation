@@ -126,3 +126,5 @@ def recommendations(index, nlp, remove_factors, remove_statements, es=None):
             print(f'Bulk write errors into {index_name} (if any): \n {resp}')
         except Exception as e:
             raise e
+    es.refresh(factor_index_name)
+    es.refresh(statement_index_name)

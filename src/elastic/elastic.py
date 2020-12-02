@@ -50,7 +50,6 @@ class Elastic:
         Bulk write to ES
         """
         ok, response = bulk(self.client, _format_for_es(index, data), **es_bulk_config)
-        self.client.indices.refresh(index=index)
 
         if not ok:
             body = response[0]["index"]
@@ -123,3 +122,6 @@ class Elastic:
             body={'mappings': body}
         )
         return response
+
+    def refresh(self, index):
+        self.client.indices.refresh(index=index)
