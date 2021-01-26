@@ -1,5 +1,5 @@
 def _recommendation_indices(name, kb_id):
-    return f'curation_{name}_recommendations_{kb_id}'
+    return f'curation-{name}-{kb_id}'
 
 
 def get_factor_recommendation_index_id(kb_id):
