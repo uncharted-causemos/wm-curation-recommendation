@@ -12,8 +12,7 @@ class Config:
 
     ES = Elastic(
         os.getenv('ES_HOST', ''),
-        os.getenv('ES_PORT', '9200'),
-        timeout=os.getenv('ES_TIMEOUT', '120')
+        os.getenv('ES_PORT', '9200')
     )
 
     DEBUG = True
