@@ -18,8 +18,49 @@ def get_candidate(factor, index_name, es=None):
     return get_recommendation_from_es(factor_index_name, factor, es=es)
 
 
-def compute_knn(factor, num_recommendations, knowledge_base_index, es=None):
-    factor_index_name = get_factor_recommendation_index_id(knowledge_base_index)
+# Helper for the compute_knn function
+def _build_query_filter(factor, statement_ids, project_index_id, es=None):
+    # Helper for getting the subj obj pairs
+    def _map_source(statement):
+        source = statement['_source']
+        return [
+            source['subj']['factor'],
+            source['obj']['factor']
+        ]
+
+    # Helper for turning the subj/obj pairs into a list of factors
+    def _reduce_source(factors, subj_obj_pairs):
+        return factors + subj_obj_pairs
+
+    # Get the subj/obj pairs from es
+    body = {
+        'query': {
+            'bool': {
+                'filter': [
+                    {'terms': {'id': statement_ids}}
+                ]
+            }
+        }
+    }
+    response = (es or app.config['ES']).search(
+        project_index_id, body, size=10000, _source_includes=['subj.factor', 'obj.factor'])
+    factors = list(reduce(_reduce_source, list(map(
+        _map_source, response['hits']['hits']))))
+
+    # Return the query filter
+    return {
+        'bool': {
+            'filter': [
+                {'term': {'cluster_id': factor['cluster_id']}},
+                {'terms': {'text_original': factors}}
+            ]
+        }
+    }
+
+
+def compute_knn(factor, statement_ids, num_recommendations, project_index, knowledge_base_index, es=None):
+    factor_index_name = get_factor_recommendation_index_id(
+        knowledge_base_index)
 
     def _map_knn_results(factor, score):
         return {
@@ -28,20 +69,15 @@ def compute_knn(factor, num_recommendations, knowledge_base_index, es=None):
         }
 
     body = {
-        'query': {
-            'bool': {
-                'filter': [
-                    {'term': {'cluster_id': factor['cluster_id']}}
-                ]
-            }
-        }
+        'query': _build_query_filter(factor, statement_ids, project_index)
     }
     # FIXME: Once prod ES supports dense vectors.
     # Search for 10000 docs to then run knn on.
     # Limit to 10000 means it's possible that some or all of the actual k nearest neighbors are not returned (unlikely on smaller knowledge bases)
     # ES supports Dense Vectors and an internal knn algorithm, so we don't have to be limited by this. However, our production ES instance
     # doesn't support dense vectors, so this should be updated eventually.
-    response = (es or app.config['ES']).search(factor_index_name, body, size=10000)
+    response = app.config['ES'].search(
+        factor_index_name, body, size=10000)
 
     # Compute knn using the generalized knn method
     knn_factors, knn_scores = knn(
@@ -52,8 +88,9 @@ def compute_knn(factor, num_recommendations, knowledge_base_index, es=None):
     return list(map(_map_knn_results, knn_factors, knn_scores))
 
 
-def compute_kl_divergence(factor, num_recommendations, project_index, knowledge_base_index, es=None, clustering_dim=20):
-    factor_index_name = get_factor_recommendation_index_id(knowledge_base_index)
+def compute_kl_divergence(factor, statement_ids, num_recommendations, project_index, knowledge_base_index, es=None, clustering_dim=20):
+    factor_index_name = get_factor_recommendation_index_id(
+        knowledge_base_index)
 
     def _map_kl_nn_results(factor, score):
         return {
@@ -83,7 +120,7 @@ def compute_kl_divergence(factor, num_recommendations, project_index, knowledge_
     factors_in_cluster = list(map(_map_source, response))
 
     # Getting candidates for kl_divergence helper
-    def _get_concept_candidates(text, index):
+    def _get_concept_candidates(text, statement_ids, index):
         if not isinstance(text, list):
             text = [text]
 
@@ -120,6 +157,11 @@ def compute_kl_divergence(factor, num_recommendations, project_index, knowledge_
         body = {
             'query': {
                 'bool': {
+                    'filter': {
+                        'terms': {
+                            'id': statement_ids
+                        }
+                    },
                     'should': [
                         {'terms': {'subj.factor': text, '_name': 'subj'}},
                         {'terms': {'obj.factor': text, '_name': 'obj'}}
@@ -149,7 +191,7 @@ def compute_kl_divergence(factor, num_recommendations, project_index, knowledge_
         return list(uniq_factors.values())
 
     factors = list(map(lambda x: x['text_original'], factors_in_cluster))
-    concept_candidates = _get_concept_candidates(factors, project_index)
+    concept_candidates = _get_concept_candidates(factors, statement_ids, project_index)
     concept_candidates = _dedupe_on_factor_text_original(concept_candidates)
 
     # Get the candidate from the factor we want to reground
@@ -159,7 +201,7 @@ def compute_kl_divergence(factor, num_recommendations, project_index, knowledge_
         else:
             return factor_x
 
-    concept_candidate = _get_concept_candidates(factor['text_original'], project_index)
+    concept_candidate = _get_concept_candidates(factor['text_original'], statement_ids, project_index)
     concept_candidate = reduce(_reduce_candidates, concept_candidate)
 
     # Compute kl divergence using the generalized method
