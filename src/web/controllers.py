@@ -65,7 +65,6 @@ def recommendation_regrounding(project_id):
     # Get the remaining params from the request body
     knowledge_base_id = body['knowledge_base_id']
     factor = body['factor']
-    statement_ids = body['statement_ids']
 
     recommended_factors = []
 
@@ -77,14 +76,11 @@ def recommendation_regrounding(project_id):
 
         knn = r_compute_knn(
             factor,
-            statement_ids,
             num_knn_recommendations,
-            project_id,
             knowledge_base_id
         )
         kl_nn = compute_kl_divergence(
             factor,
-            statement_ids,
             num_kl_nn_recommendations,
             project_id,
             knowledge_base_id
@@ -138,8 +134,6 @@ def recommendation_polarity(project_id):
     knowledge_base_id = body['knowledge_base_id']
     subj = body['subj_factor']
     obj = body['obj_factor']
-    polarity = body['polarity']
-    statement_ids = body['statement_ids']
 
     recommended_statements = []
 
@@ -148,10 +142,7 @@ def recommendation_polarity(project_id):
     if statement['cluster_id'] != -1:
         recommended_statements = p_compute_knn(
             statement,
-            statement_ids,
-            polarity,
             num_recommendations,
-            project_id,
             knowledge_base_id
         )
 
