@@ -129,7 +129,13 @@ def compute_kl_divergence(factor, num_recommendations, project_index, knowledge_
             }
         }
         included_fields = ['subj.candidates', 'obj.candidates', 'subj.factor', 'obj.factor']
-        response = (es or app.config['ES']).search_with_scrolling(index, body, '5m', source=True, _source_includes=included_fields)
+
+        response = (es or app.config['ES']).search_with_scrolling(index, body, '5m',
+                                                                  source=True,
+                                                                  _source_includes=included_fields,
+                                                                  size=10000,
+                                                                  sort=['_doc'],
+                                                                  track_scores=False)
 
         return list(map(_map_factor_source_to_concept_candidate, response))
 
@@ -153,6 +159,7 @@ def compute_kl_divergence(factor, num_recommendations, project_index, knowledge_
     concept_candidates = _dedupe_on_factor_text_original(concept_candidates)
 
     # Get the candidate from the factor we want to reground
+
     def _reduce_candidates(factor_x, factor_y):
         if len(factor_x['candidates']) < len(factor_y['candidates']):
             return factor_y
@@ -168,4 +175,5 @@ def compute_kl_divergence(factor, num_recommendations, project_index, knowledge_
         concept_candidates + [concept_candidate],
         num_recommendations
     )
+
     return list(map(_map_kl_nn_results, kl_nn_factors, kl_nn_scores))
