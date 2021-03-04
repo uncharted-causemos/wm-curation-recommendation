@@ -43,7 +43,9 @@ def get_edge_recommendations(project_id, subj_concept, obj_concept):
     print(f'Score threshold: {score_threshold}')
 
     edges_above_threshold = list(filter(lambda x: x['subj_candidate']['score'] > score_threshold and x['obj_candidate']['score'] > score_threshold, edges))
-    edges_above_threshold.sort(key=lambda x: (x['subj_candidate']['score'] + x['obj_candidate']['score']) / 2)
+    edges_above_threshold = list(map(lambda x: {'id': x['id'], 'score': (
+        x['subj_candidate']['score'] + x['obj_candidate']['score']) / 2}, edges_above_threshold))
+    edges_above_threshold.sort(key=lambda x: x['score'])
     edges_above_threshold.reverse()
 
-    return list(map(lambda x: x['id'], edges_above_threshold))
+    return edges_above_threshold
