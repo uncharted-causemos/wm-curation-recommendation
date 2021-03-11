@@ -17,12 +17,12 @@ There are three options for scoring edges:
 1. average score: Take the average of subj.candidate.score and obj.candidate.score. But this ranks example (a) above example (b).
 We want some sort of minimum standard for the candidates.
 
-2. min score: Sort edges in descending order of min(subj.candidate.score, obj.candidate.score). This would rate example (b) above (a). 
+2. min score: Sort edges in descending order of min(subj.candidate.score, obj.candidate.score). This would rate example (b) above (a).
 But it would also rank it higher than example (c), whose minimum score is only slightly lower, but it's other score is much higher.
 
-3. variable threshold: Here the goal is to find a variable threshold to serve as our minimum standard for candidates. Then rate the remaining 
+3. variable threshold: Here the goal is to find a variable threshold to serve as our minimum standard for candidates. Then rate the remaining
 edges based on their average score. The threshold is calculated as the mean(scores) - std(scores) i.e. slightly below the average of the scores of candidates
-found for the subj_concept and obj_concept in question. 
+found for the subj_concept and obj_concept in question.
 '''
 
 
@@ -33,7 +33,24 @@ def get_edge_recommendations(project_id, subj_concept, obj_concept):
                 'filter': [
                     {'term': {'subj.candidates.name': subj_concept}},
                     {'term': {'obj.candidates.name': obj_concept}}
-                ]
+                ],
+                'should': [
+                    {
+                        'bool': {
+                            'must_not': [
+                                {'term': {'subj.concept': subj_concept}},
+                            ]
+                        }
+                    },
+                    {
+                        'bool': {
+                            'must_not': [
+                                {'term': {'obj.concept': subj_concept}},
+                            ]
+                        }
+                    },
+                ],
+                'minimum_should_match': 1
             }
         }
     }
