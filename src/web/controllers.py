@@ -151,7 +151,7 @@ def recommendation_polarity(project_id):
     return jsonify({'recommendations': recommended_statements})
 
 
-@recommendation_api.route('/<project_id>/empty-edge', methods=['POST'])
+@recommendation_api.route('/<project_id>/edge-regrounding', methods=['POST'])
 def empty_edge(project_id):
     body = request.get_json()
 
