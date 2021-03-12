@@ -11,6 +11,8 @@ from services.regrounding_recommendation import get_candidate as r_get_candidate
 from services.regrounding_recommendation import compute_knn as r_compute_knn
 from services.regrounding_recommendation import compute_kl_divergence
 
+from services.empty_edge_recommendation import get_edge_recommendations
+
 from web import tasks
 from web.extensions import celery
 
@@ -146,4 +148,20 @@ def recommendation_polarity(project_id):
             knowledge_base_id
         )
 
+    return jsonify({'recommendations': recommended_statements})
+
+
+@recommendation_api.route('/<project_id>/edge-regrounding', methods=['POST'])
+def empty_edge(project_id):
+    body = request.get_json()
+
+    num_recommendations = int(body['num_recommendations'])
+    if num_recommendations > 10000:  # Max num recommendations allowed
+        raise BadRequest(
+            description="num_recommendations must not exceed 10,000.")
+
+    subj_concept = body['subj_concept']
+    obj_concept = body['obj_concept']
+
+    recommended_statements = get_edge_recommendations(project_id, subj_concept, obj_concept)[:num_recommendations]
     return jsonify({'recommendations': recommended_statements})
