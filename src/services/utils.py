@@ -48,7 +48,7 @@ def kl_divergence(doc, data, num_recommendations):
 
     kl_divergence_scores = np.array([entropy(doc_concept_candidate_dist, f_dist) for f_dist in concept_candidate_distributions])
     if (kl_divergence_scores.shape[0] > 0 and np.max(kl_divergence_scores) > 0):
-        kl_divergence_scores /= np.max(kl_divergence_scores)
+        kl_divergence_scores /= np.max(kl_divergence_scores) # Normalize the KL Divergence scores
 
     sorted_indices = np.argsort(kl_divergence_scores)
     factors_sorted = np.array(data)[sorted_indices]
