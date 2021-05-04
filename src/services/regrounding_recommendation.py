@@ -3,7 +3,7 @@ from elastic.elastic_indices import get_factor_recommendation_index_id
 from functools import reduce
 
 from services.recommendation import get_recommendation_from_es
-from services.utils import knn, kl_divergence
+from logic.distance_metrics import DistanceMetrics
 
 try:
     from flask import current_app as app
@@ -44,7 +44,7 @@ def compute_knn(factor, num_recommendations, knowledge_base_index, es=None):
     response = (es or app.config['ES']).search(factor_index_name, body, size=10000)
 
     # Compute knn using the generalized knn method
-    knn_factors, knn_scores = knn(
+    knn_factors, knn_scores = DistanceMetrics.knn(
         factor,
         list(map(lambda x: x['_source'], response['hits']['hits'])),
         num_recommendations
@@ -170,7 +170,7 @@ def compute_kl_divergence(factor, num_recommendations, project_index, knowledge_
     concept_candidate = reduce(_reduce_candidates, concept_candidate)
 
     # Compute kl divergence using the generalized method
-    kl_nn_factors, kl_nn_scores = kl_divergence(
+    kl_nn_factors, kl_nn_scores = DistanceMetrics.kl_divergence(
         concept_candidate,
         concept_candidates + [concept_candidate],
         num_recommendations
