@@ -1,5 +1,6 @@
 import math
 import statistics
+import random
 
 from flask import Blueprint, jsonify, request
 from flask import current_app as app
@@ -26,6 +27,23 @@ recommendation_api = Blueprint('recommendation_api', __name__)
 @index_api.route('/')
 def index():
     return jsonify({})
+
+
+@index_api.route('/write_to_ml', methods=['POST'])
+def write_to_ml():
+    body = request.get_json()
+    input = body.get('input')
+
+    with open(f'/resources/ml_models/ml_model.txt', 'w') as writer:
+        writer.write(input)
+
+    return jsonify({})
+
+
+@index_api.route('/read_from_ml', methods=['GET'])
+def read_from_ml():
+    with open('/resources/ml_models/ml_model.txt', 'r') as reader:
+        return jsonify({'out': reader.readlines()})
 
 
 @recommendation_api.route('/<knowledge_base_id>', methods=['POST'])
