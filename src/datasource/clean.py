@@ -6,14 +6,14 @@ _regex_special_chars = re.compile(r'[^a-zA-Z]')
 
 
 # Clean the sentence and lematize it
-def clean(nlp, lemmatizer):
+def clean(nlp):
     def _clean(sentence):
         sentence = sentence.lower()
         sentence = _remove_special_chars(sentence)
         sentence = _remove_stopwords(sentence, nlp=nlp)
         sentence = _remove_multiple_spaces(sentence)
         sentence = _trim(sentence)
-        sentence = _lemmatize(sentence, lemmatizer=lemmatizer)
+        sentence = _lemmatize(sentence, nlp=nlp)
         return sentence
 
     return _clean
@@ -31,7 +31,7 @@ def _trim(sentence):
     return sentence.strip()
 
 
-def _remove_stopwords(sentence, nlp=None):
+def _remove_stopwords(sentence, nlp):
     if nlp is None:
         raise Exception('NLP not defined')
     words = sentence.split(' ')
@@ -39,8 +39,8 @@ def _remove_stopwords(sentence, nlp=None):
     return ' '.join(words)
 
 
-def _lemmatize(sentence, lemmatizer=None):
-    if lemmatizer is None:
+def _lemmatize(sentence, nlp):
+    if nlp is None:
         raise Exception('Lemmatizer is not defined')
     words = sentence.split(' ')
-    return ' '.join([lemmatizer.lookup(word) for word in words])
+    return ' '.join([nlp(word)[0].lemma_ for word in words])

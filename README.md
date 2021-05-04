@@ -3,7 +3,7 @@ Currently only able to run the app in a docker image. Ingest is run manually.
 # General Prerequisites:
 
 # Environment Setup
-1. Download spacy models from [here](https://github.com/explosion/spacy-models/releases//tag/en_core_web_lg-2.2.5), unzip and put folder in `data/` directory
+1. Download the large english spacy model from [here](https://spacy.io/models/en), unzip and put folder in `data/` directory
 2. `pip3 install -r requirements.txt` (create a virtualenv first if you so choose)
 3. Fill in `ES_HOST`, `ES_PORT`, and `NLP_FILE_PATH` in the `.env` file with the appropriate settings
 
@@ -23,6 +23,8 @@ Currently only able to run the app in a docker image. Ingest is run manually.
 To enter a docker container: `docker exec -it <container_id> bash`
 
 Note: If trying to access local host ES point variables in `.env` to `host.docker.internal`
+
+After running `docker-compose` to quickly tear everything down, run `docker-compose down --rmi all --remove-orphans`
 
 # Run Linting
 You can run linting using: `flake8 --exclude .venv,.vscode,__pycache__,data --ignore E501 .`

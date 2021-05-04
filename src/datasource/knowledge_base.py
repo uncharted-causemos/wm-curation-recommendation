@@ -1,7 +1,5 @@
 import spacy
 
-from spacy.lemmatizer import Lemmatizer
-
 from datasource.clean import clean
 from datasource.vectorize import vectorize
 
@@ -62,9 +60,8 @@ class KnowledgeBase():
         # nlp vocabulary
         try:
             nlp = spacy.load(nlp)
-            lemmatizer = Lemmatizer(nlp.vocab.lookups)
 
-            _clean = clean(nlp, lemmatizer)
+            _clean = clean(nlp)
             _vectorize = vectorize(nlp)
 
             self._build_factor = self._build_factor_recommendation(
