@@ -1,49 +1,49 @@
-version: "3.4"
+version: '3.4'
 
 services:
   redis:
-    image: "redis:5.0.4-stretch"
-    restart: "${DOCKER_RESTART_POLICY:-unless-stopped}"
-    stop_grace_period: "${DOCKER_STOP_GRACE_PERIOD:-3s}"
+    image: 'redis:5.0.4-stretch'
+    restart: '${DOCKER_RESTART_POLICY:-unless-stopped}'
+    stop_grace_period: '${DOCKER_STOP_GRACE_PERIOD:-3s}'
     volumes:
-      - "redis:/data"
+      - 'redis:/data'
 
   app:
     build:
-      context: "."
+      context: '.'
       args:
-        - "FLASK_ENV=${FLASK_ENV:-production}"
+        - 'FLASK_ENV=${FLASK_ENV:-production}'
     env_file:
       - .env
     healthcheck:
-      test: "${DOCKER_HEALTHCHECK_TEST:-curl 127.0.0.1:5000/}"
-      interval: "60s"
-      timeout: "3s"
-      start_period: "5s"
+      test: '${DOCKER_HEALTHCHECK_TEST:-curl 127.0.0.1:5000/}'
+      interval: '60s'
+      timeout: '3s'
+      start_period: '5s'
       retries: 3
     links:
-      - "redis"
+      - 'redis'
     depends_on:
-      - "redis"
+      - 'redis'
     ports:
-      - "${DOCKER_WEB_PORT:-127.0.0.1:5000}:5000"
+      - '${DOCKER_WEB_PORT:-127.0.0.1:5000}:5000'
     volumes:
-      - "${DOCKER_WEB_VOLUME:-./data:/app/data}"
+      - '${DOCKER_WEB_VOLUME:-./data:/app/data}'
 
   celery_worker:
     build:
-      context: "."
+      context: '.'
       args:
-        - "FLASK_ENV=${FLASK_ENV:-production}"
+        - 'FLASK_ENV=${FLASK_ENV:-production}'
     env_file:
       - .env
     links:
-      - "redis"
+      - 'redis'
     depends_on:
-      - "redis"
-    command: celery worker -A web.worker.celery --loglevel=info
+      - 'redis'
+    command: celery -A web.celery.worker.celery worker --loglevel=info
     volumes:
-      - "${DOCKER_WEB_VOLUME:-./data:/app/data}"
+      - '${DOCKER_WEB_VOLUME:-./data:/app/data}'
 
 volumes:
   redis: {}

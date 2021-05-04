@@ -25,5 +25,5 @@ class Config:
     CELERY_ACCEPT_CONTENT = ['json', 'yaml']
     CELERY_TASK_SERIALIZER = 'json'
     CELERY_RESULT_SERIALIZER = 'json'
-    CELERY_IMPORTS = ('web.tasks',)
+    CELERY_IMPORTS = ('web.celery.tasks',)
     CELERY_WORKER_HIJACK_ROOT_LOGGER = False

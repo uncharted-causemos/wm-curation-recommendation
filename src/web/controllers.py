@@ -13,8 +13,8 @@ from services.regrounding_recommendation import compute_kl_divergence
 
 from services.empty_edge_recommendation import get_edge_recommendations
 
-from web import tasks
-from web.extensions import celery
+from web.celery import tasks
+from web.celery import celery
 
 from werkzeug.exceptions import BadRequest
 

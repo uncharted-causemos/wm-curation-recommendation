@@ -1,6 +1,6 @@
 import os
-from web.factories.celery import configure_celery
-from web.factories.application import create_application
+from web.celery.config import configure
+from web.application import create_application
 
 
 # For running flask app locally outside of docker
@@ -10,7 +10,7 @@ def create_app():
 
 def run():
     app = create_application()
-    configure_celery(app)
+    configure(app)
     host = os.getenv('FLASK_HOST', '0.0.0.0')
     app.run(host)
 

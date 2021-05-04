@@ -4,7 +4,7 @@ from flask import Flask, request
 
 from web.controllers import index_api, recommendation_api
 from web.errors import errors
-from web.factories.configuration import Config
+from web.configuration import Config
 
 
 def create_application():
@@ -14,7 +14,7 @@ def create_application():
     """
     app = Flask("__name__",)
     app.config.from_object(Config)
-    
+
     # Logging after every request.
     @app.after_request
     def after_request(response):

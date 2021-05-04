@@ -1,6 +1,6 @@
 from services.recommendation import recommendations
 
-from web.extensions import celery
+from web.celery import celery
 
 
 # progress will update the state with a message
