@@ -37,7 +37,7 @@ services:
         target: /app/data
       - type: volume
         source: ml_models
-        target: /resources/ml_models
+        target: /app/resources/ml_models
         volume:
           nocopy: true
 
@@ -59,7 +59,7 @@ services:
         target: /app/data
       - type: volume
         source: ml_models
-        target: /resources/ml_models
+        target: /app/resources/ml_models
         volume:
           nocopy: true
 
