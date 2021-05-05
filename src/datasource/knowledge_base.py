@@ -103,19 +103,3 @@ class KnowledgeBase():
             raise e
 
         return _process(data)
-
-    def get_model_data(self):
-        return [
-            {
-                'data': self.reducerto20d.get_model_data(),
-                'name': 'umap20d'
-            },
-            {
-                'data': self.reducerto2d.get_model_data(),
-                'name': 'umap2d'
-            },
-            {
-                'data': self.clusterer.get_model_data(),
-                'name': 'hdbscan'
-            }
-        ]
