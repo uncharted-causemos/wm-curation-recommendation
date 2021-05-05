@@ -38,7 +38,6 @@ def recommendation(knowledge_base_id):
     # Run the Long running ingestion
     task = tasks.compute_recommendations.delay(
         knowledge_base_id,
-        app.config['NLP_FILE_PATH'],
         remove_factors,
         remove_statements
     )

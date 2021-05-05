@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 
@@ -21,7 +20,3 @@ def dedupe_recommendations(recos, vector_field_name, text_field_name, list_agg_f
     })
     deduped_recos = reco_df.to_dict(orient='records')
     return deduped_recos
-
-
-def full(shape, fill_value):
-    return np.full(shape, fill_value)

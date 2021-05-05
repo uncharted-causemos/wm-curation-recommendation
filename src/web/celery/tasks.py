@@ -9,7 +9,7 @@ def progress(instance, state, message):
 
 
 @celery.task(bind=True, name="tasks.compute_recommendations")
-def compute_recommendations(self, index, nlp, remove_factors, remove_statements):
+def compute_recommendations(self, index, remove_factors, remove_statements):
     message, state = (
         'Creating Recommendations',
         'PROGRESS'
@@ -20,7 +20,7 @@ def compute_recommendations(self, index, nlp, remove_factors, remove_statements)
         progress(self, state, message)
 
         # Get the recommendations
-        recommendations(index, nlp, remove_factors, remove_statements)
+        recommendations(index, remove_factors, remove_statements)
 
         # Keep track of successful state
         message, state = (
