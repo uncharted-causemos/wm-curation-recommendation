@@ -14,8 +14,10 @@ class KnowledgeBase():
 
     def __init__(self, source, *args, **kwargs):
         self.source = source
-        self.reducer = UmapReducer()
-        self.clusterer = HDBScanClusterer()
+        self.reducerto20d = UmapReducer(300, 20, 0.01, 15)
+        self.reducerto2d = UmapReducer(20, 2, 0.01, 15)
+        self.clusterer = HDBScanClusterer(20, 15, 8, 0.01)
+        self.embedder = SpacyEmbedder(normalize=True)
 
         # Create the factors and the statements
         for statement in self.source:
@@ -45,7 +47,7 @@ class KnowledgeBase():
     def _build_factor(self, factor):
         clean_factor = TextPreprocessor.clean(factor)
         return {
-            'vector_300_d': SpacyEmbedder.vectorize(clean_factor).tolist(),
+            'vector_300_d': self.embedder.get_embedding(clean_factor).tolist(),
             'text_cleaned': clean_factor,
             'text_original': factor,
         }
@@ -54,7 +56,7 @@ class KnowledgeBase():
         statement = '{0} {1}'.format(subj_factor, obj_factor)
         clean_statement = TextPreprocessor.clean(statement)
         return {
-            'vector_300_d': SpacyEmbedder.vectorize(clean_statement).tolist(),
+            'vector_300_d': self.embedder.get_embedding(clean_statement).tolist(),
             'text_cleaned': clean_statement,
             'text_original': statement,
             'subj_factor': subj_factor,
@@ -73,9 +75,9 @@ class KnowledgeBase():
 
             # TODO: make a HyperparameterConfig file that defines these
             # parameters
-            data = self.reducer.reduce(data, 300, 20, 0.01, 15)
-            data = self.clusterer.cluster(data, 20, 15, 8, 0.01)
-            data = self.reducer.reduce(data, 20, 2, 0.01, 15)
+            data = self.reducerto20d.reduce(data)
+            data = self.clusterer.cluster(data)
+            data = self.reducerto2d.reduce(data)
 
             def _gen(data):
                 for datum in data:
@@ -101,3 +103,19 @@ class KnowledgeBase():
             raise e
 
         return _process(data)
+
+    def get_model_data(self):
+        return [
+            {
+                'data': self.reducerto20d.get_model_data(),
+                'name': 'umap20d'
+            },
+            {
+                'data': self.reducerto2d.get_model_data(),
+                'name': 'umap2d'
+            },
+            {
+                'data': self.clusterer.get_model_data(),
+                'name': 'hdbscan'
+            }
+        ]
