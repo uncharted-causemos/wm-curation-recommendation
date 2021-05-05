@@ -2,7 +2,7 @@ from pathlib import PurePath
 from web.configuration import Config
 from datasource.knowledge_base import KnowledgeBase
 from elastic.elastic_indices import get_factor_recommendation_index_id, get_statement_recommendation_index_id
-from logic.dao.ml_model_docker_volume_dao import MLModelDockerVolumeDAO
+from logic.ml_model_dao.ml_model_docker_volume_dao import MLModelDockerVolumeDAO
 try:
     from flask import current_app as app
 except ImportError as e:
