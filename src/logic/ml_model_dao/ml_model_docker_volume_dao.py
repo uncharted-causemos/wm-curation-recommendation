@@ -1,5 +1,5 @@
 
-from logic.dao.ml_model_dao import MLModelDAO
+from logic.ml_model_dao.ml_model_dao import MLModelDAO
 
 import os
 import pickle
