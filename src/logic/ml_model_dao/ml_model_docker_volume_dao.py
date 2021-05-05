@@ -1,8 +1,6 @@
-
-from logic.ml_model_dao.ml_model_dao import MLModelDAO
-
 import os
 import pickle
+from logic.ml_model_dao.ml_model_dao import MLModelDAO
 
 
 class MLModelDockerVolumeDAO(MLModelDAO):
