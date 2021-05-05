@@ -19,6 +19,7 @@ class Config:
     TESTING = True
 
     NLP_FILE_PATH = os.getenv('NLP_FILE_PATH')
+    ML_MODEL_DATA_DIR = os.getenv('ML_MODEL_DATA_DIR')
 
     CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', None)
     CELERY_RESULT_BACKEND = os.getenv('CELERY_BACKEND', None)

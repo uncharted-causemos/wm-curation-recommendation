@@ -1,8 +1,8 @@
+from pathlib import PurePath
+from web.configuration import Config
 from datasource.knowledge_base import KnowledgeBase
-
-from elastic.elastic_indices import get_factor_recommendation_index_id, \
-    get_statement_recommendation_index_id
-
+from elastic.elastic_indices import get_factor_recommendation_index_id, get_statement_recommendation_index_id
+from logic.dao.ml_model_docker_volume_dao import MLModelDockerVolumeDAO
 try:
     from flask import current_app as app
 except ImportError as e:
@@ -126,5 +126,15 @@ def recommendations(index, remove_factors, remove_statements, es=None):
             print(f'Bulk write errors into {index_name} (if any): \n {resp}')
         except Exception as e:
             raise e
+
+        try:
+            models = knowledge_base.get_model_data()
+            for model in models:
+                file_path = PurePath(Config.ML_MODEL_DATA_DIR).joinpath(es.get_host()).joinpath(model['name']).joinpath(factor_index_name)
+                MLModelDockerVolumeDAO.save(model['data'], file_path)
+                print(f'Saved {model["data"]} in {file_path}')
+        except Exception as e:
+            raise e
+
     es.refresh(factor_index_name)
     es.refresh(statement_index_name)

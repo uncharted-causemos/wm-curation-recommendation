@@ -34,6 +34,9 @@ class Elastic:
         self._port = port
         self.client = Elasticsearch(host, port=port, **kwargs)
 
+    def get_host(self):
+        return self._host
+
     def bulk_write(self, index, data):
         """
         Bulk write to ES
