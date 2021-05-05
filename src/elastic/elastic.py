@@ -14,17 +14,6 @@ es_bulk_config = {
 }
 
 
-def _format_for_es(index, data):
-    if not isinstance(data, list):
-        data = [data]
-
-    for datum in data:
-        yield {
-            '_source': datum,
-            '_index': index
-        }
-
-
 # Establish an ES Client for use throughout the application
 class Elastic:
     _host = None
@@ -49,7 +38,7 @@ class Elastic:
         """
         Bulk write to ES
         """
-        ok, response = bulk(self.client, _format_for_es(index, data), **es_bulk_config)
+        ok, response = bulk(self.client, self._format_for_es(index, data), **es_bulk_config)
 
         if not ok:
             body = response[0]["index"]
@@ -125,3 +114,13 @@ class Elastic:
 
     def refresh(self, index):
         self.client.indices.refresh(index=index)
+
+    def _format_for_es(self, index, data):
+        if not isinstance(data, list):
+            data = [data]
+
+        for datum in data:
+            yield {
+                '_source': datum,
+                '_index': index
+            }

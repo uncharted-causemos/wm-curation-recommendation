@@ -84,7 +84,7 @@ def get_recommendation_from_es(index, statement, es=None):
     return hits[0]['_source']
 
 
-def recommendations(index, nlp, remove_factors, remove_statements, es=None):
+def recommendations(index, remove_factors, remove_statements, es=None):
     es = es or app.config['ES']
 
     # Remove the factor index
@@ -104,7 +104,7 @@ def recommendations(index, nlp, remove_factors, remove_statements, es=None):
     _ = es.create_index(statement_index_name, _statement_mapping)
 
     # Get recommendations
-    def _fetch_knowledge_base(es_client, index, nlp):
+    def _fetch_knowledge_base(es_client, index):
         # Create the KnowledgeBase from an ES scroll query
         body = {
             'query': {
@@ -112,10 +112,10 @@ def recommendations(index, nlp, remove_factors, remove_statements, es=None):
             }
         }
         statements = es_client.search_with_scrolling(index, body, '1000m', size=10000)
-        return KnowledgeBase(statements, nlp)
+        return KnowledgeBase(statements)
 
     # Get the knowledge base
-    knowledge_base = _fetch_knowledge_base(es, index, nlp)
+    knowledge_base = _fetch_knowledge_base(es, index)
 
     # Process the factors and statements
     for typ, index_name in [('factors', factor_index_name), ('statements', statement_index_name)]:

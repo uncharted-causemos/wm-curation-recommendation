@@ -1,7 +1,7 @@
 from elastic.elastic_indices import get_statement_recommendation_index_id
 
 from services.recommendation import get_recommendation_from_es
-from services.utils import knn
+from logic.distance_metrics import DistanceMetrics
 
 try:
     from flask import current_app as app
@@ -40,7 +40,7 @@ def compute_knn(statement, num_recommendations, knowledge_base_index, es=None):
     response = (es or app.config['ES']).search(statement_index_name, body, size=num_recommendations)
 
     # Compute knn using the generalized knn method
-    knn_factors, knn_scores = knn(
+    knn_factors, knn_scores = DistanceMetrics.knn(
         statement,
         list(map(lambda x: x['_source'], response['hits']['hits'])),
         num_recommendations

@@ -9,9 +9,9 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, dir_path + '/../src')
 
 
-def ingest(nlp, remove_factors, remove_statements):
+def ingest(remove_factors, remove_statements):
     def _ingest(index, es):
-        recommendations(index, nlp, remove_factors, remove_statements, es)
+        recommendations(index, remove_factors, remove_statements, es)
         return f'Successfully ingested {index}'
     return _ingest
 
@@ -19,6 +19,7 @@ def ingest(nlp, remove_factors, remove_statements):
 if __name__ == '__main__':
     # Get CLI args
     parser = argparse.ArgumentParser()
+    # TODO: Delete this as it's not being used anymore
     parser.add_argument("-n", "--nlp", type=str,
                         default="../data/en_core_web_lg-2.2.5/en_core_web_lg/en_core_web_lg-2.2.5", help="NLP dir")
     parser.add_argument("-u", "--url", type=str,
@@ -48,7 +49,7 @@ if __name__ == '__main__':
         sys.exit(1)
 
     start_time = time.time()
-    ingestor = ingest(args.nlp.strip(), args.factors, args.statements)
+    ingestor = ingest(args.factors, args.statements)
 
     # Create ES connection from args
     es_args = args.url.rsplit(':', 1)
