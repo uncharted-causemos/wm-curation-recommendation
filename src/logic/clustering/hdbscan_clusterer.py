@@ -8,7 +8,7 @@ from logic.clustering.clusterer import Clusterer
 
 class HDBScanClusterer(Clusterer):
     def __init__(self, dim, min_cluster_size, min_samples, epsilon):
-        self.dime = dim
+        self.dim = dim
         self.min_cluster_size = min_cluster_size
         self.min_samples = min_samples
         self.epsilon = epsilon

@@ -46,9 +46,9 @@ class UmapReducer(Reducer):
         vector_matrix = np.array(data)
 
         if vector_matrix.shape[0] - 1 < 2:
-            return np.full((vector_matrix.shape[0], self.dim), 0)
+            return np.full((vector_matrix.shape[0], self.dim_end), 0)
 
-        self.mapper = self._fit(vector_matrix, self.dim, self.min_dist, self.n_neighbors)
+        self.mapper = self._fit(vector_matrix)
         return self._transform(vector_matrix)
 
     # NB: there is a hard limit that the data must have more than 2 points,
@@ -57,12 +57,12 @@ class UmapReducer(Reducer):
     # See this issue: https://github.com/lmcinnes/umap/issues/201
 
     def _fit(self, data):
-        if (self.n_components >= data.shape[0] - 1):
+        if (self.dim_end >= data.shape[0] - 1):
             init = 'random'
         else:
             init = 'spectral'
 
-        return UMAP(n_components=self.n_components,
+        return UMAP(n_components=self.dim_end,
                     min_dist=self.min_dist,
                     n_neighbors=self.n_neighbors,
                     init=init).fit(data)
