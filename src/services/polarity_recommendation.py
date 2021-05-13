@@ -43,6 +43,7 @@ def compute_knn(statement, num_recommendations, knowledge_base_index, es=None):
     knn_factors, knn_scores = DistanceMetrics.knn(
         statement,
         list(map(lambda x: x['_source'], response['hits']['hits'])),
-        num_recommendations
+        num_recommendations,
+        clustering_dim=2 # TODO: Move this into a configuration file
     )
     return list(map(_map_knn_results, knn_factors, knn_scores))

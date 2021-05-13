@@ -17,13 +17,7 @@ _factor_mapping = {
         "text_original": {
             "type": "keyword"
         },
-        "vector_20_d": {
-            "type": "float"
-        },
         "vector_2_d": {
-            "type": "float"
-        },
-        "vector_300_d": {
             "type": "float"
         }
     }
@@ -47,13 +41,7 @@ _statement_mapping = {
         "text_original": {
             "type": "keyword"
         },
-        "vector_20_d": {
-            "type": "float"
-        },
         "vector_2_d": {
-            "type": "float"
-        },
-        "vector_300_d": {
             "type": "float"
         }
     }

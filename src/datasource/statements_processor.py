@@ -15,9 +15,8 @@ class StatementsProcessor(DataProcessor):
 
         # TODO: make a HyperparameterConfig file that defines these
         # parameters
-        self.reducerto20d = UmapReducer(300, 20, 0.01, 15)
-        self.reducerto2d = UmapReducer(20, 2, 0.01, 15)
-        self.clusterer = HDBScanClusterer(20, 15, 8, 0.01)
+        self.reducer = UmapReducer(300, 2, 0.01, 15)
+        self.clusterer = HDBScanClusterer(2, 15, 8, 0.01)
         self.embedder = SpacyEmbedder(normalize=True)
 
         # Create the statements
@@ -36,16 +35,12 @@ class StatementsProcessor(DataProcessor):
         return list(self._statements.values())
 
     def process(self):
-        data = self.statements
-
-        data = self._dedupe_recommendations(data, 'vector_300_d', 'text_cleaned')
-
-        data = self.reducerto20d.reduce(data)
+        print('Starting statement processing...')
+        data = self._dedupe_recommendations(self.statements, 'vector_300_d', 'text_cleaned')
+        data = self.reducer.reduce(data)
         data = self.clusterer.cluster(data)
-        data = self.reducerto2d.reduce(data)
-
         formatted_data = self._format_data(data)
-
+        print('Finished statement processing.')
         return formatted_data
 
     def _build_statement(self, obj_factor, subj_factor):
@@ -71,5 +66,6 @@ class StatementsProcessor(DataProcessor):
                 copy['text_original'] = text
                 copy['subj_factor'] = subj
                 copy['obj_factor'] = obj
+                del copy['vector_300_d']
                 formatted_data.append(copy)
         return formatted_data

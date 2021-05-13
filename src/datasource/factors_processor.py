@@ -15,9 +15,8 @@ class FactorsProcessor(DataProcessor):
 
         # TODO: make a HyperparameterConfig file that defines these
         # parameters
-        self.reducerto20d = UmapReducer(300, 20, 0.01, 15)
-        self.reducerto2d = UmapReducer(20, 2, 0.01, 15)
-        self.clusterer = HDBScanClusterer(20, 15, 8, 0.01)
+        self.reducer = UmapReducer(300, 2, 0.01, 15)
+        self.clusterer = HDBScanClusterer(2, 15, 8, 0.01)
         self.embedder = SpacyEmbedder(normalize=True)
 
         # Create the factors
@@ -38,15 +37,12 @@ class FactorsProcessor(DataProcessor):
         return list(self._factors.values())
 
     def process(self):
-        # Dedupe the data
+        print('Starting factor processing...')
         data = self._dedupe_recommendations(self.factors, 'vector_300_d', 'text_cleaned')
-
-        data = self.reducerto20d.reduce(data)
+        data = self.reducer.reduce(data)
         data = self.clusterer.cluster(data)
-        data = self.reducerto2d.reduce(data)
-
         formatted_data = self._format_data(data)
-
+        print('Finished factor processing.')
         return formatted_data
 
     def _build_factor(self, factor):
@@ -66,6 +62,7 @@ class FactorsProcessor(DataProcessor):
         for datum in data:
             for text in datum['text_original']:
                 copy = datum.copy()
+                del copy['vector_300_d']
                 copy['text_original'] = text
                 formatted_data.append(copy)
         return formatted_data
