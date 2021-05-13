@@ -2,7 +2,7 @@ from elastic.elastic_indices import get_factor_recommendation_index_id
 
 from functools import reduce
 
-from services.recommendation import get_recommendation_from_es
+from services.utils import get_recommendation_from_es
 from logic.distance_metrics import DistanceMetrics
 
 try:
