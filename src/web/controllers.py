@@ -131,7 +131,7 @@ def recommendation_regrounding(project_id):
         for factor, scores in factor_scores_mapping.items():
             recommended_factors.append({
                 'factor': factor,
-                # This is to make sure that scores found using both heuristics have lower distance and so are higher rated
+                # + 1 to make sure that scores found using both heuristics have lower distance and so are higher rated
                 'score': statistics.mean(scores) if len(scores) > 1 else scores[0] + 1
             })
 

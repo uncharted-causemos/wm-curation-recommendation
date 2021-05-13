@@ -1,9 +1,14 @@
-from services.recommendation import recommendations
-
+from ingest.ingestor import Ingestor
 from web.celery import celery
 
+try:
+    from flask import current_app as app
+except ImportError as e:
+    print(e)
 
 # progress will update the state with a message
+
+
 def progress(instance, state, message):
     instance.update_state(state=state, meta={'status': message})
 
@@ -19,8 +24,9 @@ def compute_recommendations(self, index, remove_factors, remove_statements):
         # Notify the user that the long running process has begun
         progress(self, state, message)
 
-        # Get the recommendations
-        recommendations(index, remove_factors, remove_statements)
+        # Ingest
+        ingestor = Ingestor(index, remove_factors, remove_statements, app.config['ES'])
+        ingestor.ingest()
 
         # Keep track of successful state
         message, state = (

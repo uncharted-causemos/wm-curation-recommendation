@@ -2,7 +2,7 @@ from elastic.elastic_indices import get_factor_recommendation_index_id
 
 from functools import reduce
 
-from services.recommendation import get_recommendation_from_es
+from services.utils import get_recommendation_from_es
 from logic.distance_metrics import DistanceMetrics
 
 try:
@@ -47,7 +47,8 @@ def compute_knn(factor, num_recommendations, knowledge_base_index, es=None):
     knn_factors, knn_scores = DistanceMetrics.knn(
         factor,
         list(map(lambda x: x['_source'], response['hits']['hits'])),
-        num_recommendations
+        num_recommendations,
+        clustering_dim=2 # TODO: Move this into a configuration file
     )
     return list(map(_map_knn_results, knn_factors, knn_scores))
 

@@ -9,13 +9,6 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 sys.path.insert(0, dir_path + '/../src')
 
 
-def ingest(remove_factors, remove_statements):
-    def _ingest(index, es):
-        recommendations(index, remove_factors, remove_statements, es)
-        return f'Successfully ingested {index}'
-    return _ingest
-
-
 if __name__ == '__main__':
     # Get CLI args
     parser = argparse.ArgumentParser()
@@ -43,13 +36,12 @@ if __name__ == '__main__':
     # Creating the ingestor
     try:
         from elastic.elastic import Elastic
-        from services.recommendation import recommendations
+        from ingest.ingestor import Ingestor
     except Exception as e:
         traceback.print_exc(e)
         sys.exit(1)
 
     start_time = time.time()
-    ingestor = ingest(args.factors, args.statements)
 
     # Create ES connection from args
     es_args = args.url.rsplit(':', 1)
@@ -57,7 +49,8 @@ if __name__ == '__main__':
 
     try:
         print(f'Generating recommendations for index: {args.index}')
-        ingestor(args.index.strip(), es)
+        ingestor = Ingestor(args.index, args.factors, args.statements, es)
+        ingestor.ingest()
     except Exception as e:
         traceback.print_exc(e)
         sys.exit(1)

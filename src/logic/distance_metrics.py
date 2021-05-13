@@ -6,7 +6,7 @@ from sklearn.neighbors import KDTree
 
 class DistanceMetrics:
     @classmethod
-    def knn(cls, doc, data, num_recommendations, clustering_dim=20):
+    def knn(cls, doc, data, num_recommendations, clustering_dim):
         data = np.array(data)
         vector_field_name = f'vector_{clustering_dim}_d'
         vectors = np.array(list(map(lambda x: x[vector_field_name], data)))

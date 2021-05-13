@@ -23,10 +23,10 @@ class HDBScanClusterer(Clusterer):
         # Computer the clusters
         clusters = None
         try:
-            clusterer = hdbscan.HDBSCAN(min_cluster_size=self.min_cluster_size,
-                                        min_samples=self.min_samples,
-                                        cluster_selection_epsilon=self.epsilon)
-            clusters = clusterer.fit_predict(cluster_data)
+            self.clusterer = hdbscan.HDBSCAN(min_cluster_size=self.min_cluster_size,
+                                             min_samples=self.min_samples,
+                                             cluster_selection_epsilon=self.epsilon)
+            clusters = self.clusterer.fit_predict(cluster_data)
         except Exception:
             clusters = np.full(cluster_data.shape[0], -1)
 
