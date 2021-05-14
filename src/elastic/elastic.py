@@ -96,12 +96,15 @@ class Elastic:
         # Clear the scroll
         self.client.clear_scroll(scroll_id=scroll_id)
 
+    def index_exists(self, index):
+        return self.client.indices.exists(index)
+
     def delete_index(self, index):
         """
         Delete an index in ES
         """
         response = {}
-        if self.client.indices.exists(index):
+        if self.index_exists(index):
             response = self.client.indices.delete(index=index)
         return response
 

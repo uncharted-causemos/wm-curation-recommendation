@@ -3,12 +3,25 @@ from abc import ABCMeta, abstractmethod
 
 class MLModelDAO(metaclass=ABCMeta):
 
-    @classmethod
     @abstractmethod
-    def save(cls, data, file_path):
+    def save(self, data, model_name, index_typ):
+        pass
+
+    @abstractmethod
+    def load(self, model_name, index_typ):
         pass
 
     @classmethod
     @abstractmethod
-    def load(cls, file_path):
+    def list_kb_indices(cls, es_host):
+        pass
+
+    @classmethod
+    @abstractmethod
+    def delete_kb_models(cls, es_host, kb_index):
+        pass
+
+    @classmethod
+    @abstractmethod
+    def list_models(cls):
         pass

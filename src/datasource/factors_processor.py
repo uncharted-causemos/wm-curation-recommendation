@@ -66,3 +66,15 @@ class FactorsProcessor(DataProcessor):
                 copy['text_original'] = text
                 formatted_data.append(copy)
         return formatted_data
+
+    def get_model_data(self):
+        return [
+            {
+                'data': self.reducer.get_model_data(),
+                'name': 'umap-reducer'
+            },
+            {
+                'data': self.clusterer.get_model_data(),
+                'name': 'hdbscan-clusterer'
+            }
+        ]

@@ -69,3 +69,15 @@ class StatementsProcessor(DataProcessor):
                 del copy['vector_300_d']
                 formatted_data.append(copy)
         return formatted_data
+
+    def get_model_data(self):
+        return [
+            {
+                'data': self.reducer.get_model_data(),
+                'name': 'umap-reducer'
+            },
+            {
+                'data': self.clusterer.get_model_data(),
+                'name': 'hdbscan-clusterer'
+            }
+        ]
