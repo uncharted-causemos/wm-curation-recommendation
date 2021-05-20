@@ -31,8 +31,8 @@ def index():
     return jsonify({})
 
 
-@index_api.route('/saved-models', methods=['GET'])
-def write_to_ml():
+@index_api.route('/list-saved-models', methods=['GET'])
+def list_saved_models():
     return jsonify({'models': MLModelDockerVolumeDAO.list_models()})
 
 
