@@ -3,6 +3,7 @@ from datasource.statements_processor import StatementsProcessor
 
 from elastic.elastic_indices import get_factor_recommendation_index_id, \
     get_statement_recommendation_index_id
+from logic.ml_model_dao.ml_model_docker_volume_dao import MLModelDockerVolumeDAO
 
 
 _factor_mapping = {
@@ -50,16 +51,17 @@ _statement_mapping = {
 
 class Ingestor():
 
-    def __init__(self, index, remove_factors, remove_statements, es):
-        self.index = index
-        self.factor_index_name = get_factor_recommendation_index_id(self.index)
-        self.statement_index_name = get_statement_recommendation_index_id(self.index)
+    def __init__(self, kb_index, remove_factors, remove_statements, es):
+        self.kb_index = kb_index
+        self.factor_index_name = get_factor_recommendation_index_id(self.kb_index)
+        self.statement_index_name = get_statement_recommendation_index_id(self.kb_index)
         self.remove_factors = remove_factors
         self.remove_statements = remove_statements
         # TODO: Just pass ES in always
         self.es = es
 
     def ingest(self):
+
         self._set_up_indices()
         knowledge_base = self._fetch_knowledge_base()
 
@@ -67,14 +69,30 @@ class Ingestor():
         for index_name, processor in [(self.factor_index_name, FactorsProcessor(knowledge_base)), (self.statement_index_name, StatementsProcessor(knowledge_base))]:
             data = processor.process()
 
-            try:
-                resp = self.es.bulk_write(index_name, data)
-                print(f'Bulk write errors into {index_name} (if any): \n {resp}')
-            except Exception as e:
-                raise e
+            resp = self.es.bulk_write(index_name, data)
+            print(f'Bulk write errors into {index_name} (if any): \n {resp}')
+
+            ml_model_dao = MLModelDockerVolumeDAO(self.es.get_host(), self.kb_index)
+            self._save_models(ml_model_dao, processor.get_model_data(), index_name)
+            self._delete_stale_models(ml_model_dao, self.es)
 
         self.es.refresh(self.factor_index_name)
         self.es.refresh(self.statement_index_name)
+
+    def _save_models(self, ml_model_dao, models, curation_index):
+        for model in models:
+            ml_model_dao.save(
+                data=model['data'],
+                model_name=model['name'],
+                curation_index=curation_index)
+            print(f'Saved {model["name"]}')
+
+    def _delete_stale_models(self, ml_model_dao, es):
+        indices = ml_model_dao.list_kb_indices()
+        for index in indices:
+            if es.index_exists(index) is False:
+                ml_model_dao.delete_kb_models(index)
+                print(f'Deleted models associated with index: {index}')
 
     def _set_up_indices(self):
         self._set_up_factor_index()
@@ -99,7 +117,7 @@ class Ingestor():
             }
         }
         statements = self.es.search_with_scrolling(
-            self.index,
+            self.kb_index,
             body,
             scroll='1000m',
             size=10000,

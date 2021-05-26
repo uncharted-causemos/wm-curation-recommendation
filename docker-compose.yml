@@ -6,7 +6,11 @@ services:
     restart: '${DOCKER_RESTART_POLICY:-unless-stopped}'
     stop_grace_period: '${DOCKER_STOP_GRACE_PERIOD:-3s}'
     volumes:
-      - 'redis:/data'
+      - type: volume
+        source: redis
+        target: /data
+        volume:
+          nocopy: true
 
   app:
     build:
@@ -28,7 +32,14 @@ services:
     ports:
       - '${DOCKER_WEB_PORT:-127.0.0.1:5000}:5000'
     volumes:
-      - '${DOCKER_WEB_VOLUME:-./data:/app/data}'
+      - type: bind
+        source: ./data
+        target: /app/data
+      - type: volume
+        source: ml_models
+        target: /app/resources/ml_models
+        volume:
+          nocopy: true
 
   celery_worker:
     build:
@@ -43,7 +54,15 @@ services:
       - 'redis'
     command: celery -A web.celery.worker.celery worker --loglevel=info
     volumes:
-      - '${DOCKER_WEB_VOLUME:-./data:/app/data}'
+      - type: bind
+        source: ./data
+        target: /app/data
+      - type: volume
+        source: ml_models
+        target: /app/resources/ml_models
+        volume:
+          nocopy: true
 
 volumes:
   redis: {}
+  ml_models: {}

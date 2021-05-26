@@ -34,6 +34,9 @@ class Elastic:
         self._port = port
         self.client = Elasticsearch(host, port=port, **kwargs)
 
+    def get_host(self):
+        return self._host
+
     def bulk_write(self, index, data):
         """
         Bulk write to ES
@@ -93,12 +96,15 @@ class Elastic:
         # Clear the scroll
         self.client.clear_scroll(scroll_id=scroll_id)
 
+    def index_exists(self, index):
+        return self.client.indices.exists(index)
+
     def delete_index(self, index):
         """
         Delete an index in ES
         """
         response = {}
-        if self.client.indices.exists(index):
+        if self.index_exists(index):
             response = self.client.indices.delete(index=index)
         return response
 

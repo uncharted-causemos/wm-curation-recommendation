@@ -1,6 +1,7 @@
 import math
 import statistics
 
+
 from flask import Blueprint, jsonify, request
 from flask import current_app as app
 
@@ -16,6 +17,8 @@ from services.empty_edge_recommendation import get_edge_recommendations
 from web.celery import tasks
 from web.celery import celery
 
+from logic.ml_model_dao.ml_model_docker_volume_dao import MLModelDockerVolumeDAO
+
 from werkzeug.exceptions import BadRequest
 
 
@@ -26,6 +29,11 @@ recommendation_api = Blueprint('recommendation_api', __name__)
 @index_api.route('/')
 def index():
     return jsonify({})
+
+
+@index_api.route('/list-saved-models', methods=['GET'])
+def list_saved_models():
+    return jsonify({'models': MLModelDockerVolumeDAO.list_models()})
 
 
 @recommendation_api.route('/<knowledge_base_id>', methods=['POST'])
