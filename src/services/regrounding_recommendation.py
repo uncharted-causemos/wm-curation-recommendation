@@ -53,7 +53,7 @@ def compute_knn(factor, num_recommendations, knowledge_base_index, es=None):
     return list(map(_map_knn_results, knn_factors, knn_scores))
 
 
-def compute_kl_divergence(factor, num_recommendations, project_index, knowledge_base_index, es=None, clustering_dim=20):
+def compute_kl_divergence(factor, num_recommendations, project_index, knowledge_base_index, es=None, clustering_dim=2):
     factor_index_name = get_factor_recommendation_index_id(knowledge_base_index)
 
     def _map_kl_nn_results(factor, score):
@@ -72,16 +72,8 @@ def compute_kl_divergence(factor, num_recommendations, project_index, knowledge_
             }
         }
     }
-    included_fields = ['text_original', 'text_cleaned', f'vector_{clustering_dim}_d']
-    response = (es or app.config['ES']).search_with_scrolling(factor_index_name, body, '5m', _source_includes=included_fields)
-
-    def _map_source(doc):
-        vector_field_name = f'vector_{clustering_dim}_d'
-        doc['vector'] = doc[vector_field_name]
-        doc.pop(vector_field_name, None)
-        return doc
-
-    factors_in_cluster = list(map(_map_source, response))
+    included_fields = ['text_original']
+    factors_in_cluster = (es or app.config['ES']).search_with_scrolling(factor_index_name, body, '5m', _source_includes=included_fields)
 
     # Getting candidates for kl_divergence helper
     def _get_concept_candidates(text, index):
