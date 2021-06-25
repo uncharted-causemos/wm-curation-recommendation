@@ -45,6 +45,9 @@ def recommendation(knowledge_base_id):
     es_host = body.get('es_host')
     es_port = body.get('es_port')
 
+    if es_host is None or es_port is None:
+        raise BadRequest(description="es_host and es_port are required arguments.")
+
     # Run the Long running ingestion
     task = tasks.compute_recommendations.delay(
         knowledge_base_id,
