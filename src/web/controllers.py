@@ -42,12 +42,16 @@ def recommendation(knowledge_base_id):
     body = request.get_json()
     remove_factors = body and bool(body.get('remove_factors'))
     remove_statements = body and bool(body.get('remove_statements'))
+    es_host = body.get('es_host')
+    es_port = body.get('es_port')
 
     # Run the Long running ingestion
     task = tasks.compute_recommendations.delay(
         knowledge_base_id,
         remove_factors,
-        remove_statements
+        remove_statements,
+        es_host,
+        es_port
     )
     return jsonify({
         'task_id': task.id

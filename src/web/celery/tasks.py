@@ -1,4 +1,5 @@
 from ingest.ingestor import Ingestor
+from elastic.elastic import Elastic
 from web.celery import celery
 
 try:
@@ -14,7 +15,7 @@ def progress(instance, state, message):
 
 
 @celery.task(bind=True, name="tasks.compute_recommendations")
-def compute_recommendations(self, index, remove_factors, remove_statements):
+def compute_recommendations(self, index, remove_factors, remove_statements, es_host, es_port):
     message, state = (
         'Creating Recommendations',
         'PROGRESS'
@@ -25,7 +26,8 @@ def compute_recommendations(self, index, remove_factors, remove_statements):
         progress(self, state, message)
 
         # Ingest
-        ingestor = Ingestor(index, remove_factors, remove_statements, app.config['ES'])
+        es = Elastic(es_host, es_port, timeout=60)
+        ingestor = Ingestor(index, remove_factors, remove_statements, es)
         ingestor.ingest()
 
         # Keep track of successful state
