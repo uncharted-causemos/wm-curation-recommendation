@@ -12,9 +12,6 @@ sys.path.insert(0, dir_path + '/../src')
 if __name__ == '__main__':
     # Get CLI args
     parser = argparse.ArgumentParser()
-    # TODO: Delete this as it's not being used anymore
-    parser.add_argument("-n", "--nlp", type=str,
-                        default="../data/en_core_web_lg-2.2.5/en_core_web_lg/en_core_web_lg-2.2.5", help="NLP dir")
     parser.add_argument("-u", "--url", type=str,
                         help="URL where ES is hosted")
     parser.add_argument("-i", "--index", type=str,

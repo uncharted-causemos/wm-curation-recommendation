@@ -42,12 +42,19 @@ def recommendation(knowledge_base_id):
     body = request.get_json()
     remove_factors = body and bool(body.get('remove_factors'))
     remove_statements = body and bool(body.get('remove_statements'))
+    es_host = body.get('es_host')
+    es_port = body.get('es_port')
+
+    if es_host is None or es_port is None:
+        raise BadRequest(description="es_host and es_port are required arguments.")
 
     # Run the Long running ingestion
     task = tasks.compute_recommendations.delay(
         knowledge_base_id,
         remove_factors,
-        remove_statements
+        remove_statements,
+        es_host,
+        es_port
     )
     return jsonify({
         'task_id': task.id

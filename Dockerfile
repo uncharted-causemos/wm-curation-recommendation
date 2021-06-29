@@ -9,6 +9,7 @@ ENV BUILD_DEPS="build-essential" \
 
 RUN apt-get update \
     && apt-get install -y ${BUILD_DEPS} ${APP_DEPS} --no-install-recommends \
+    && python -m pip install --upgrade pip \
     && pip install -r requirements.txt \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /usr/share/doc && rm -rf /usr/share/man \
