@@ -35,9 +35,3 @@ class HDBScanClusterer(Clusterer):
             datum['cluster_id'] = clusters[idx].item()
 
         return data
-
-    def get_model_data(self):
-        if self.clusterer is None:
-            raise ValueError('Clusterer is empty. Make usre cluster is called before accessing model data.')
-
-        return self.clusterer

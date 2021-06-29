@@ -36,8 +36,8 @@ def list_saved_models():
     return jsonify({'models': MLModelDockerVolumeDAO.list_models()})
 
 
-@recommendation_api.route('/<knowledge_base_id>', methods=['POST'])
-def recommendation(knowledge_base_id):
+@recommendation_api.route('/ingest/<knowledge_base_id>', methods=['POST'])
+def compute_recommendations(knowledge_base_id):
     # Get the params
     body = request.get_json()
     remove_factors = body and bool(body.get('remove_factors'))
@@ -51,10 +51,39 @@ def recommendation(knowledge_base_id):
     # Run the Long running ingestion
     task = tasks.compute_recommendations.delay(
         knowledge_base_id,
-        remove_factors,
-        remove_statements,
-        es_host,
-        es_port
+        statement_ids=[],
+        remove_factors=remove_factors,
+        remove_statements=remove_statements,
+        es_host=es_host,
+        es_port=es_port
+    )
+    return jsonify({
+        'task_id': task.id
+    })
+
+
+@recommendation_api.route('/delta-ingest/<knowledge_base_id>', methods=['POST'])
+def compute_delta_recommendations(knowledge_base_id):
+    # Get the params
+    body = request.get_json()
+    es_host = body.get('es_host')
+    es_port = body.get('es_port')
+    statement_ids = body.get('statement_ids')
+
+    if es_host is None or es_port is None:
+        raise BadRequest(description='es_host and es_port are required arguments.')
+
+    if len(statement_ids) == 0:
+        raise BadRequest(description='statement_ids must not be empty.')
+
+    # Run the Long running ingestion
+    task = tasks.compute_recommendations.delay(
+        knowledge_base_id,
+        statement_ids,
+        remove_factors=False,
+        remove_statements=False,
+        es_host=es_host,
+        es_port=es_port
     )
     return jsonify({
         'task_id': task.id

@@ -27,12 +27,6 @@ class UmapReducer(Reducer):
 
         return data
 
-    def get_model_data(self):
-        if self.mapper is None:
-            raise ValueError('Mapper is null. Make sure reduce is called before accessing data.')
-
-        return self.mapper
-
     def _compute_umap(self, data):
         """
         UMAP can't run with n_neighbors < 2, and UMAP forces n_neighbors =

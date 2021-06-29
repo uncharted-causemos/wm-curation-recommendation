@@ -1,23 +1,16 @@
 from logic.preprocessing.text_preprocessor import TextPreprocessor
-from logic.embeddings.spacy_embedder import SpacyEmbedder
-from logic.reduction.umap_reducer import UmapReducer
-from logic.clustering.hdbscan_clusterer import HDBScanClusterer
 from datasource.utils import dedupe_recommendations
-from datasource.data_processor import DataProcessor
 
 
-class FactorsProcessor(DataProcessor):
+class FactorsProcessor():
 
-    def __init__(self, source):
+    def __init__(self, source, reducer, clusterer, embedder):
         self._factors = dict()
 
         self.source = source
-
-        # TODO: make a HyperparameterConfig file that defines these
-        # parameters
-        self.reducer = UmapReducer(300, 2, 0.01, 15)
-        self.clusterer = HDBScanClusterer(2, 15, 8, 0.01)
-        self.embedder = SpacyEmbedder(normalize=True)
+        self.reducer = reducer
+        self.clusterer = clusterer
+        self.embedder = embedder
 
         # Create the factors
         for statement in self.source:
@@ -39,8 +32,11 @@ class FactorsProcessor(DataProcessor):
     def process(self):
         print('Starting factor processing...')
         data = self._dedupe_recommendations(self.factors, 'vector_300_d', 'text_cleaned')
+        print('Finished deduping')
         data = self.reducer.reduce(data)
+        print('Finished reducing')
         data = self.clusterer.cluster(data)
+        print('Finished clustering')
         formatted_data = self._format_data(data)
         print('Finished factor processing.')
         return formatted_data
@@ -66,15 +62,3 @@ class FactorsProcessor(DataProcessor):
                 copy['text_original'] = text
                 formatted_data.append(copy)
         return formatted_data
-
-    def get_model_data(self):
-        return [
-            {
-                'data': self.reducer.get_model_data(),
-                'name': 'umap-reducer'
-            },
-            {
-                'data': self.clusterer.get_model_data(),
-                'name': 'hdbscan-clusterer'
-            }
-        ]

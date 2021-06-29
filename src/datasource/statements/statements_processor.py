@@ -1,23 +1,16 @@
-from datasource.data_processor import DataProcessor
 from logic.preprocessing.text_preprocessor import TextPreprocessor
-from logic.embeddings.spacy_embedder import SpacyEmbedder
-from logic.reduction.umap_reducer import UmapReducer
-from logic.clustering.hdbscan_clusterer import HDBScanClusterer
 from datasource.utils import dedupe_recommendations
 
 
-class StatementsProcessor(DataProcessor):
+class StatementsProcessor():
 
-    def __init__(self, source):
+    def __init__(self, source, reducer, clusterer, embedder):
         self._statements = dict()
 
         self.source = source
-
-        # TODO: make a HyperparameterConfig file that defines these
-        # parameters
-        self.reducer = UmapReducer(300, 2, 0.01, 15)
-        self.clusterer = HDBScanClusterer(2, 15, 8, 0.01)
-        self.embedder = SpacyEmbedder(normalize=True)
+        self.reducer = reducer
+        self.clusterer = clusterer
+        self.embedder = embedder
 
         # Create the statements
         for statement in self.source:
@@ -69,15 +62,3 @@ class StatementsProcessor(DataProcessor):
                 del copy['vector_300_d']
                 formatted_data.append(copy)
         return formatted_data
-
-    def get_model_data(self):
-        return [
-            {
-                'data': self.reducer.get_model_data(),
-                'name': 'umap-reducer'
-            },
-            {
-                'data': self.clusterer.get_model_data(),
-                'name': 'hdbscan-clusterer'
-            }
-        ]
