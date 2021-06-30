@@ -2,20 +2,14 @@ from ingest.ingestor import Ingestor
 from elastic.elastic import Elastic
 from web.celery import celery
 
-try:
-    from flask import current_app as app
-except ImportError as e:
-    print(e)
-
-# progress will update the state with a message
-
 
 def progress(instance, state, message):
+    # progress will update the state with a message
     instance.update_state(state=state, meta={'status': message})
 
 
 @celery.task(bind=True, name="tasks.compute_recommendations")
-def compute_recommendations(self, index, remove_factors, remove_statements, es_host, es_port):
+def compute_recommendations(self, index, statement_ids, remove_factors, remove_statements, es_host, es_port):
     message, state = (
         'Creating Recommendations',
         'PROGRESS'
@@ -27,7 +21,12 @@ def compute_recommendations(self, index, remove_factors, remove_statements, es_h
 
         # Ingest
         es = Elastic(es_host, es_port, timeout=60)
-        ingestor = Ingestor(index, remove_factors, remove_statements, es)
+        ingestor = Ingestor(
+            es=es,
+            kb_index=index,
+            statement_ids=statement_ids,
+            remove_factors=remove_factors,
+            remove_statements=remove_statements)
         ingestor.ingest()
 
         # Keep track of successful state

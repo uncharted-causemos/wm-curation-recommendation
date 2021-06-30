@@ -1,5 +1,5 @@
-from datasource.factors_processor import FactorsProcessor
-from datasource.statements_processor import StatementsProcessor
+from datasource.factors.factors_orchestrator import FactorsOrchestrator
+from datasource.statements.statements_orchestrator import StatementsOrchestrator
 
 from elastic.elastic_indices import get_factor_recommendation_index_id, \
     get_statement_recommendation_index_id
@@ -50,47 +50,62 @@ _statement_mapping = {
 
 
 class Ingestor():
-
-    def __init__(self, kb_index, remove_factors, remove_statements, es):
+    def __init__(self, es, kb_index, statement_ids, remove_factors, remove_statements):
         self.kb_index = kb_index
         self.factor_index_name = get_factor_recommendation_index_id(self.kb_index)
         self.statement_index_name = get_statement_recommendation_index_id(self.kb_index)
         self.remove_factors = remove_factors
         self.remove_statements = remove_statements
-        # TODO: Just pass ES in always
         self.es = es
+        self.statement_ids = statement_ids
+        self.is_delta_ingest = len(self.statement_ids) > 0
 
     def ingest(self):
+        if self.is_delta_ingest:
+            knowledge_base = self._fetch_knowledge_base(self.statement_ids)
+        else:
+            self._set_up_indices()
+            knowledge_base = self._fetch_knowledge_base()
 
-        self._set_up_indices()
-        knowledge_base = self._fetch_knowledge_base()
-
+        # Process factors and statements
+        orchestrators = [
+            (
+                self.factor_index_name,
+                FactorsOrchestrator(
+                    knowledge_base,
+                    es_host=self.es.get_host(),
+                    kb_index=self.kb_index,
+                    use_saved_reducer=self.is_delta_ingest,
+                    use_saved_clusterer=self.is_delta_ingest
+                )
+            ),
+            (
+                self.statement_index_name,
+                StatementsOrchestrator(
+                    knowledge_base,
+                    es_host=self.es.get_host(),
+                    kb_index=self.kb_index,
+                    use_saved_reducer=self.is_delta_ingest,
+                    use_saved_clusterer=self.is_delta_ingest
+                )
+            )
+        ]
         # Process the factors and statements
-        for index_name, processor in [(self.factor_index_name, FactorsProcessor(knowledge_base)), (self.statement_index_name, StatementsProcessor(knowledge_base))]:
-            data = processor.process()
+        for index_name, orchestrator in orchestrators:
+            data = orchestrator.orchestrate()
 
             resp = self.es.bulk_write(index_name, data)
             print(f'Bulk write errors into {index_name} (if any): \n {resp}')
 
-            ml_model_dao = MLModelDockerVolumeDAO(self.es.get_host(), self.kb_index)
-            self._save_models(ml_model_dao, processor.get_model_data(), index_name)
-            self._delete_stale_models(ml_model_dao, self.es)
-
+        self._delete_stale_models()
         self.es.refresh(self.factor_index_name)
         self.es.refresh(self.statement_index_name)
 
-    def _save_models(self, ml_model_dao, models, curation_index):
-        for model in models:
-            ml_model_dao.save(
-                data=model['data'],
-                model_name=model['name'],
-                curation_index=curation_index)
-            print(f'Saved {model["name"]}')
-
-    def _delete_stale_models(self, ml_model_dao, es):
+    def _delete_stale_models(self):
+        ml_model_dao = MLModelDockerVolumeDAO(self.es.get_host(), self.kb_index)
         indices = ml_model_dao.list_kb_indices()
         for index in indices:
-            if es.index_exists(index) is False:
+            if self.es.index_exists(index) is False:
                 ml_model_dao.delete_kb_models(index)
                 print(f'Deleted models associated with index: {index}')
 
@@ -110,12 +125,25 @@ class Ingestor():
 
         self.es.create_index(self.statement_index_name, _statement_mapping)
 
-    def _fetch_knowledge_base(self):
-        body = {
-            'query': {
-                'match_all': {}
+    def _fetch_knowledge_base(self, statement_ids=None):
+        if statement_ids is None:
+            body = {
+                'query': {
+                    'match_all': {}
+                }
             }
-        }
+        else:
+            body = {
+                'query': {
+                    'bool': {
+                        'filter': {
+                            'terms': {
+                                '_id': statement_ids
+                            }
+                        }
+                    }
+                }
+            }
         statements = self.es.search_with_scrolling(
             self.kb_index,
             body,

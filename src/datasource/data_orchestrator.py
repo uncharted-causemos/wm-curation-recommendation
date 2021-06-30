@@ -1,8 +1,8 @@
 from abc import ABCMeta, abstractmethod
 
 
-class DataProcessor(metaclass=ABCMeta):
+class DataOrchestrator(metaclass=ABCMeta):
 
     @abstractmethod
-    def process(self):
+    def orchestrate(self):
         pass
