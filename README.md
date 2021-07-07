@@ -26,5 +26,12 @@ Note: If trying to access local host ES point variables in `.env` to `host.docke
 
 After running `docker-compose` to quickly tear everything down, run `docker-compose down --rmi all --remove-orphans`
 
+# Post Deployment Test
+
+After activating the virtual environment, run `tests/post-deploy-test.py` script as follows:
+
+`python post-deploy-test.py --s 10.64.18.99:5000 --e 10.64.18.99:9200 --k indra-4a2ad0cf-19e8-11eb-afec-fa163e9a8d5d `
+
+Replace with your own parameters. 
 # Run Linting
 You can run linting using: `flake8 --exclude .venv,.vscode,__pycache__,data --ignore E501 .`
