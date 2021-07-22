@@ -33,5 +33,27 @@ After activating the virtual environment, run `tests/post-deploy-test.py` script
 `python post-deploy-test.py --s 10.64.18.99:5000 --e 10.64.18.99:9200 --k indra-4a2ad0cf-19e8-11eb-afec-fa163e9a8d5d `
 
 Replace with your own parameters. 
+
+# Using the ingestion service
+To submit a new request
+
+```
+curl -H "Content-type:application/json" -XPOST http://<curation_server>:<port>/recommendation/ingest/<indra_index> -d'
+{
+  "remove_factors": true,
+  "remove_statements": true,
+  "es_host": <destination_es>,
+  "es_port": 9200
+}
+'
+```
+Thisi will yield a `task_id`
+
+
+To check the ingestion status
+```
+http://<curation_server>:<port>/recommendation/task/<task_id>
+```
+
 # Run Linting
 You can run linting using: `flake8 --exclude .venv,.vscode,__pycache__,data --ignore E501 .`
