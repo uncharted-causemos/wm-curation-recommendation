@@ -46,7 +46,14 @@ if __name__ == '__main__':
 
     try:
         print(f'Generating recommendations for index: {args.index}')
-        ingestor = Ingestor(args.index, args.factors, args.statements, es)
+        ingestor = Ingestor(
+            es=es,
+            kb_index=args.index,
+            project_index=None,
+            statement_ids=[],
+            remove_factors=args.factors,
+            remove_statements=args.statements
+        )
         ingestor.ingest()
     except Exception as e:
         traceback.print_exc(e)

@@ -50,7 +50,8 @@ def compute_recommendations(knowledge_base_id):
 
     # Run the Long running ingestion
     task = tasks.compute_recommendations.delay(
-        knowledge_base_id,
+        kb_index=knowledge_base_id,
+        project_index=None,
         statement_ids=[],
         remove_factors=remove_factors,
         remove_statements=remove_statements,
@@ -68,6 +69,7 @@ def compute_delta_recommendations(knowledge_base_id):
     body = request.get_json()
     es_host = body.get('es_host')
     es_port = body.get('es_port')
+    project_index = body.get('project_index')
     statement_ids = body.get('statement_ids')
 
     if es_host is None or es_port is None:
@@ -78,8 +80,9 @@ def compute_delta_recommendations(knowledge_base_id):
 
     # Run the Long running ingestion
     task = tasks.compute_recommendations.delay(
-        knowledge_base_id,
-        statement_ids,
+        kb_index=knowledge_base_id,
+        project_index=project_index,
+        statement_ids=statement_ids,
         remove_factors=False,
         remove_statements=False,
         es_host=es_host,

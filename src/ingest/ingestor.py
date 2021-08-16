@@ -50,8 +50,9 @@ _statement_mapping = {
 
 
 class Ingestor():
-    def __init__(self, es, kb_index, statement_ids, remove_factors, remove_statements):
+    def __init__(self, es, kb_index, project_index, statement_ids, remove_factors, remove_statements):
         self.kb_index = kb_index
+        self.project_index = project_index
         self.factor_index_name = get_factor_recommendation_index_id(self.kb_index)
         self.statement_index_name = get_statement_recommendation_index_id(self.kb_index)
         self.remove_factors = remove_factors
@@ -61,11 +62,10 @@ class Ingestor():
         self.is_delta_ingest = len(self.statement_ids) > 0
 
     def ingest(self):
-        if self.is_delta_ingest:
-            knowledge_base = self._fetch_knowledge_base(self.statement_ids)
-        else:
+        if not self.is_delta_ingest:
             self._set_up_indices()
-            knowledge_base = self._fetch_knowledge_base()
+
+        knowledge_base = self._fetch_knowledge_base()
 
         # Process factors and statements
         orchestrators = [
@@ -125,27 +125,30 @@ class Ingestor():
 
         self.es.create_index(self.statement_index_name, _statement_mapping)
 
-    def _fetch_knowledge_base(self, statement_ids=None):
-        if statement_ids is None:
+    def _fetch_knowledge_base(self):
+        if not self.is_delta_ingest:
+            index = self.kb_index
             body = {
                 'query': {
                     'match_all': {}
                 }
             }
         else:
+            index = self.project_index
             body = {
                 'query': {
                     'bool': {
                         'filter': {
                             'terms': {
-                                '_id': statement_ids
+                                '_id': self.statement_ids
                             }
                         }
                     }
                 }
             }
+
         statements = self.es.search_with_scrolling(
-            self.kb_index,
+            index,
             body,
             scroll='1000m',
             size=10000,
