@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   redis:
-    image: 'redis:5.0.4-stretch'
+    image: 'docker-hub.uncharted.software/redis:5.0.4-stretch'
     restart: '${DOCKER_RESTART_POLICY:-unless-stopped}'
     stop_grace_period: '${DOCKER_STOP_GRACE_PERIOD:-3s}'
     volumes:
