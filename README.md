@@ -34,6 +34,40 @@ After activating the virtual environment, run `tests/post-deploy-test.py` script
 
 Replace with your own parameters. 
 
+
+# Using the recommendation service
+API requests
+
+## Factor regrounding recommendation
+Given a factor text, return statementIds and factors from the project that closely matches the provided factor in the embedding space.
+
+```
+POST /recommendation/:projectId/regrounding
+{
+  knowledge_base_id: xyz,
+  factor: xyz,
+  num_recommendations
+}
+```
+
+
+## Polarity recommendation
+Given a set of factors, return statementIds from the project that closely matches the provided factors in the embedding space.
+
+```
+POST /recommendation/:projectId/polarity
+{
+  knowledge_base_id: xyz,
+  subj_factor: xyz,
+  obj_factor: xyz,
+  num_recommendations
+}
+```
+
+
+## Edge recommendation
+TODO
+
 # Using the ingestion service
 To submit a new request
 
