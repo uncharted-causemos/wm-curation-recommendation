@@ -46,7 +46,7 @@ POST /recommendation/:projectId/regrounding
 {
   knowledge_base_id: xyz,
   factor: xyz,
-  num_recommendations
+  num_recommendations: 200
 }
 ```
 
@@ -58,18 +58,26 @@ Given a set of factors, return statementIds from the project that closely matche
 POST /recommendation/:projectId/polarity
 {
   knowledge_base_id: xyz,
-  subj_factor: xyz,
-  obj_factor: xyz,
-  num_recommendations
+  subj_factor: abc,
+  obj_factor: def,
+  num_recommendations: 100
 }
 ```
 
 
 ## Edge recommendation
-TODO
+Given subject and object concepts, return potential statements for regrounding
+```
+POST /recommendation/:projectId/empty-edge
+{
+  subj_concept: abc,
+  obj_concept: def,
+  num_recommendations: 10
+}
+```
 
 # Using the ingestion service
-To submit a new request
+## To submit a new seed ingstion request for a new knowledge baase
 
 ```
 curl -H "Content-type:application/json" -XPOST http://<curation_server>:<port>/recommendation/ingest/<indra_index> -d'
@@ -88,6 +96,26 @@ To check the ingestion status
 ```
 http://<curation_server>:<port>/recommendation/task/<task_id>
 ```
+
+## To submit an incremental ingestion request for project
+
+```
+curl -H "Content-type: application/json" -XPOST http:<curation_server>:<port>/recommendation/-delta-ingest/<indra_index> -d'
+{
+  "es_host": <destination_es>,
+  "es_port": 9200,
+  "statement_ids": [new statements from project],
+  "project_id": <projectId>
+}
+'
+```
+
+Thisi will yield a `task_id`
+To check the ingestion status
+```
+http://<curation_server>:<port>/recommendation/task/<task_id>
+```
+
 
 # Run Linting
 You can run linting using: `flake8 --exclude .venv,.vscode,__pycache__,data --ignore E501 .`
