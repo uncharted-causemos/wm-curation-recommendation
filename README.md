@@ -36,7 +36,7 @@ Replace with your own parameters.
 
 
 # Using the recommendation service
-API requests
+API requests asking for recommendations.
 
 ## Factor regrounding recommendation
 Given a factor text, return statementIds and factors from the project that closely matches the provided factor in the embedding space.
@@ -76,7 +76,10 @@ POST /recommendation/:projectId/empty-edge
 }
 ```
 
+
 # Using the ingestion service
+Request to agument the existing embedding space with new data. Ingestion service requires additional infrastructure to handle work and task management. Please see `docker-compose.yml` in the repository.
+
 ## To submit a new seed ingstion request for a new knowledge baase
 
 ```
