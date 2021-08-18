@@ -34,8 +34,53 @@ After activating the virtual environment, run `tests/post-deploy-test.py` script
 
 Replace with your own parameters. 
 
+
+# Using the recommendation service
+API requests asking for recommendations.
+
+## Factor regrounding recommendation
+Given a factor text, return statementIds and factors from the project that closely matches the provided factor in the embedding space.
+
+```
+POST /recommendation/:projectId/regrounding
+{
+  knowledge_base_id: xyz,
+  factor: xyz,
+  num_recommendations: 200
+}
+```
+
+
+## Polarity recommendation
+Given a set of factors, return statementIds from the project that closely matches the provided factors in the embedding space.
+
+```
+POST /recommendation/:projectId/polarity
+{
+  knowledge_base_id: xyz,
+  subj_factor: abc,
+  obj_factor: def,
+  num_recommendations: 100
+}
+```
+
+
+## Edge recommendation
+Given subject and object concepts, return potential statements for regrounding
+```
+POST /recommendation/:projectId/empty-edge
+{
+  subj_concept: abc,
+  obj_concept: def,
+  num_recommendations: 10
+}
+```
+
+
 # Using the ingestion service
-To submit a new request
+Request to agument the existing embedding space with new data. Ingestion service requires additional infrastructure to handle work and task management. Please see `docker-compose.yml` in the repository.
+
+## To submit a new seed ingstion request for a new knowledge baase
 
 ```
 curl -H "Content-type:application/json" -XPOST http://<curation_server>:<port>/recommendation/ingest/<indra_index> -d'
@@ -54,6 +99,26 @@ To check the ingestion status
 ```
 http://<curation_server>:<port>/recommendation/task/<task_id>
 ```
+
+## To submit an incremental ingestion request for project
+
+```
+curl -H "Content-type: application/json" -XPOST http:<curation_server>:<port>/recommendation/-delta-ingest/<indra_index> -d'
+{
+  "es_host": <destination_es>,
+  "es_port": 9200,
+  "statement_ids": [new statements from project],
+  "project_id": <projectId>
+}
+'
+```
+
+Thisi will yield a `task_id`
+To check the ingestion status
+```
+http://<curation_server>:<port>/recommendation/task/<task_id>
+```
+
 
 # Run Linting
 You can run linting using: `flake8 --exclude .venv,.vscode,__pycache__,data --ignore E501 .`
