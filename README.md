@@ -68,7 +68,7 @@ POST /recommendation/:projectId/polarity
 ## Edge recommendation
 Given subject and object concepts, return potential statements for regrounding
 ```
-POST /recommendation/:projectId/empty-edge
+POST /recommendation/:projectId/edge-regrounding
 {
   subj_concept: abc,
   obj_concept: def,
