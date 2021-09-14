@@ -2,6 +2,8 @@ from numpy import linalg as LA
 from lib.spacy_wrapper import SpacyWrapper
 from logic.embeddings.embedder import Embedder
 
+from spacy.lang.en.stop_words import STOP_WORDS
+
 
 class SpacyEmbedder(Embedder):
 
@@ -12,7 +14,7 @@ class SpacyEmbedder(Embedder):
         raise NotImplementedError
 
     def get_embedding(self, sentence):
-        sentence_vector = SpacyWrapper.nlp()(sentence).vector
+        sentence_vector = SpacyWrapper.embed(sentence).vector
         if self.normalize:
             norm = LA.norm(sentence_vector)
             if norm != 0.0:

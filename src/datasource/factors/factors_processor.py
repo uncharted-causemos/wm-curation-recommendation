@@ -1,3 +1,5 @@
+import time
+
 from logic.preprocessing.text_preprocessor import TextPreprocessor
 from datasource.utils import dedupe_recommendations
 
@@ -31,14 +33,23 @@ class FactorsProcessor():
 
     def process(self):
         print('Starting factor processing...')
+
+        start_time = time.time()
         data = self._dedupe_recommendations(self.factors, 'vector_300_d', 'text_cleaned')
-        print('Finished deduping')
+        print(f'Finished deduping. Took {time.time() - start_time}')
+
+        start_time = time.time()
         data = self.reducer.reduce(data)
-        print('Finished reducing')
+        print(f'Finished reducing. Took {time.time() - start_time}')
+
+        start_time = time.time()
         data = self.clusterer.cluster(data)
-        print('Finished clustering')
+        print(f'Finished clustering. Took {time.time() - start_time}')
+
+        start_time = time.time()
         formatted_data = self._format_data(data)
-        print('Finished factor processing.')
+        print(f'Finished factor processing. Took {time.time() - start_time}')
+
         return formatted_data
 
     def _build_factor(self, factor):

@@ -33,6 +33,7 @@ class FactorsOrchestrator(DataOrchestrator):
         embedder = SpacyEmbedder(normalize=True)
 
         processor = FactorsProcessor(self.data_source, reducer, clusterer, embedder)
+
         data = processor.process()
 
         if not self.load_reducer:

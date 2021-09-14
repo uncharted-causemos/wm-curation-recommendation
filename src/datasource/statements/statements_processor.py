@@ -1,3 +1,5 @@
+import time
+
 from logic.preprocessing.text_preprocessor import TextPreprocessor
 from datasource.utils import dedupe_recommendations
 
@@ -29,11 +31,23 @@ class StatementsProcessor():
 
     def process(self):
         print('Starting statement processing...')
+
+        start_time = time.time()
         data = self._dedupe_recommendations(self.statements, 'vector_300_d', 'text_cleaned')
+        print(f'Finished deduping. Took {time.time() - start_time}')
+
+        start_time = time.time()
         data = self.reducer.reduce(data)
+        print(f'Finished reducing. Took {time.time() - start_time}')
+
+        start_time = time.time()
         data = self.clusterer.cluster(data)
+        print(f'Finished clustering. Took {time.time() - start_time}')
+
+        start_time = time.time()
         formatted_data = self._format_data(data)
-        print('Finished statement processing.')
+        print(f'Finished statement processing. Took {time.time() - start_time}')
+
         return formatted_data
 
     def _build_statement(self, obj_factor, subj_factor):

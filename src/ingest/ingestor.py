@@ -1,3 +1,5 @@
+import time
+
 from datasource.factors.factors_orchestrator import FactorsOrchestrator
 from datasource.statements.statements_orchestrator import StatementsOrchestrator
 
@@ -65,7 +67,9 @@ class Ingestor():
         if not self.is_delta_ingest:
             self._set_up_indices()
 
+        fetch_start_time = time.time()
         knowledge_base = self._fetch_knowledge_base()
+        print(f'Total time to fetch: {time.time() - fetch_start_time}')
 
         # Process factors and statements
         orchestrators = [

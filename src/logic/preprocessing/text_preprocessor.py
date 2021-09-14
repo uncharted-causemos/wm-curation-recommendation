@@ -1,4 +1,5 @@
 import re
+import re
 from lib.spacy_wrapper import SpacyWrapper
 
 
@@ -32,9 +33,9 @@ class TextPreprocessor():
 
     @classmethod
     def _remove_stopwords(cls, sentence):
-        words = [token.text for token in SpacyWrapper.nlp()(sentence) if not token.is_stop]
+        words = [word for word in sentence.split(' ') if word not in SpacyWrapper.stop_words()]
         return ' '.join(words)
 
     @classmethod
     def _lemmatize(cls, sentence):
-        return ' '.join([token.lemma_ for token in SpacyWrapper.nlp()(sentence)])
+        return ' '.join([SpacyWrapper.lemmatize(word) for word in sentence.split(' ')])

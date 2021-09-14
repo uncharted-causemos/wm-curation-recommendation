@@ -20,6 +20,9 @@ Currently only able to run the app in a docker image. Ingest is run manually.
 
 
 # Docker setup for App
+
+`docker login docker-hub.uncharted.software`
+
 To enter a docker container: `docker exec -it <container_id> bash`
 
 Note: If trying to access local host ES point variables in `.env` to `host.docker.internal`
