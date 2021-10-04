@@ -1,88 +1,124 @@
+from re import sub
 import numpy as np
+from sklearn.neighbors import KDTree
 
 try:
     from flask import current_app as app
 except ImportError as e:
     print(e)
 
-'''
-This finds statements who have as candidates, the subj_concept and obj_concept in question.
-
-Examples:
-a) subj.candidate.score = 0.9 and obj.candidate.score = 0.1
-b) subj.candidate.score = 0.4 and obj.candidate.score = 0.4
-c) subj.candidate.score = 0.35 and obj.candidate.score = 0.9
-
-There are three options for scoring edges:
-1. average score: Take the average of subj.candidate.score and obj.candidate.score. But this ranks example (a) above example (b).
-We want some sort of minimum standard for the candidates.
-
-2. min score: Sort edges in descending order of min(subj.candidate.score, obj.candidate.score). This would rate example (b) above (a).
-But it would also rank it higher than example (c), whose minimum score is only slightly lower, but it's other score is much higher.
-
-3. variable threshold: Here the goal is to find a variable threshold to serve as our minimum standard for candidates. Then rate the remaining
-edges based on their average score. The threshold is calculated as the mean(scores) - std(scores) i.e. slightly below the average of the scores of candidates
-found for the subj_concept and obj_concept in question.
-'''
+from src.elastic.elastic_indices import get_concept_index_id
 
 
-def get_edge_recommendations(project_id, subj_concept, obj_concept):
+def _get_all_concepts(kb_id):
+    # Create KD Tree of all Concepts
+    body = {
+        'query': {
+            'match_all': {}
+        }
+    }
+    es_results = app.config['ES'].search_with_scrolling(
+        get_concept_index_id(kb_id),
+        body,
+        scroll='1000m',
+        size=10000)
+    es_results = list(es_results)
+    return es_results
+
+
+def _get_concept_by_name(kb_id, concept_name):
+    # Create KD Tree of all Concepts
     body = {
         'query': {
             'bool': {
-                'filter': [
-                    {'term': {'subj.candidates.name': subj_concept}},
-                    {'term': {'obj.candidates.name': obj_concept}}
-                ],
-                'should': [
-                    {
-                        'bool': {
-                            'must_not': [
-                                {'term': {'subj.concept': subj_concept}},
-                            ]
-                        }
-                    },
-                    {
-                        'bool': {
-                            'must_not': [
-                                {'term': {'obj.concept': subj_concept}},
-                            ]
-                        }
-                    },
-                ],
-                'minimum_should_match': 1
+                'filter': {
+                    'term': {
+                        'text_original': concept_name
+                    }
+                }
             }
         }
     }
-    response = app.config['ES'].search_with_scrolling(project_id,
-                                                      body,
-                                                      scroll='10m',
-                                                      _source_includes=['id', 'subj.candidates', 'obj.candidates'],
-                                                      size=10000)
+    es_results = app.config['ES'].search(
+        get_concept_index_id(kb_id),
+        body)
+    es_results = list(map(lambda x: x['_source'], es_results['hits']['hits']))
+    return es_results[0]
 
-    def _map_source(source):
-        return {
-            'id': source['id'],
-            'subj_candidate': list(filter(lambda x: x['name'] == subj_concept, source['subj']['candidates']))[0],
-            'obj_candidate': list(filter(lambda x: x['name'] == obj_concept, source['obj']['candidates']))[0]
+
+def _get_edges(project_id, subj_concepts, obj_concepts):
+    body = {
+        'query': {
+            'bool': {
+                'must': [
+                    {'terms': {'subj.concept.raw': subj_concepts}},
+                    {'terms': {'obj.concept.raw': obj_concepts}}
+                ]
+            }
         }
+    }
 
-    edges = list(map(_map_source, response))
-    scores = list(map(lambda x: x['subj_candidate']['score'], edges)) + list(map(lambda x: x['obj_candidate']['score'], edges))
+    nearest_edges = app.config['ES'].search_with_scrolling(
+        project_id,
+        body,
+        scroll='10m',
+        size=10000,
+        _source_includes=['id', 'subj.concept', 'obj.concept'])
+    nearest_edges = list(nearest_edges)
+    return nearest_edges
 
-    # TODO: If there are only two or three, what happens?
-    score_mean = np.mean(scores)
-    score_std = np.std(scores)
-    score_threshold = score_mean - score_std
 
-    print(f'Score mean: {score_mean}')
-    print(f'Score standard deviation: {score_std}')
-    print(f'Score threshold: {score_threshold}')
+'''
+This finds the k nearest concepts in embedding space to both the subject and object concept of the empty edge.
 
-    edges_above_threshold = list(filter(lambda x: x['subj_candidate']['score'] > score_threshold and x['obj_candidate']['score'] > score_threshold, edges))
-    edges_above_threshold = list(map(lambda x: {'id': x['id'], 'score': (
-        x['subj_candidate']['score'] + x['obj_candidate']['score']) / 2}, edges_above_threshold))
-    edges_above_threshold.sort(key=lambda x: x['score'])
-    edges_above_threshold.reverse()
+Then it attempts to find edges in ES that are part of the bipartite graph formed by subject and object concepts. 
 
-    return edges_above_threshold
+It scores the results from ES based on the distances in embedding space and returns that. 
+'''
+
+
+def get_edge_recommendations(kb_id, project_id, subj_concept, obj_concept):
+    NUM_NEAREST_NEIGHBORS = 25
+
+    es_concepts = _get_all_concepts(kb_id)
+
+    vectors = np.array(list(map(lambda x: x['vector_2_d'], es_concepts)))
+    kd_tree = KDTree(vectors, metric='euclidean', leaf_size=100)
+
+    es_subj_concept = _get_concept_by_name(kb_id, subj_concept)
+    es_obj_concept = _get_concept_by_name(kb_id, obj_concept)
+
+    nn_dist_subj, nn_indices_subj = kd_tree.query(
+        np.array(es_subj_concept['vector_2_d']).reshape(1, -1),
+        k=NUM_NEAREST_NEIGHBORS
+    )
+    nn_dist_obj, nn_indices_obj = kd_tree.query(
+        np.array(es_obj_concept['vector_2_d']).reshape(1, -1),
+        k=NUM_NEAREST_NEIGHBORS
+    )
+
+    def _nearest_concepts(concept_indices):
+        return [es_concepts[ind]['text_original'] for ind in concept_indices.reshape(-1)]
+
+    def _create_concept_to_score_mapping(scores, concept_indices):
+        return {es_concepts[concept_ind]['text_original']: scores.reshape(-1)[score_ind] for score_ind, concept_ind in enumerate(concept_indices.reshape(-1))}
+
+    def _map_recommendation_with_score(subj_scores, obj_scores):
+        def _map(recommendation):
+            subj_concept = recommendation['subj']['concept']
+            obj_concept = recommendation['obj']['concept']
+            return {
+                'id': recommendation['id'],
+                'score': (subj_scores[subj_concept] + obj_scores[obj_concept]) / 2
+            }
+        return _map
+
+    nearest_subj_concepts = _nearest_concepts(nn_indices_subj)
+    nearest_obj_concepts = _nearest_concepts(nn_indices_obj)
+
+    subj_scores = _create_concept_to_score_mapping(nn_dist_subj, nn_indices_subj)
+    obj_scores = _create_concept_to_score_mapping(nn_dist_obj, nn_indices_obj)
+
+    recommendations = _get_edges(project_id, nearest_subj_concepts, nearest_obj_concepts)
+
+    return list(map(_map_recommendation_with_score(subj_scores, obj_scores), recommendations))

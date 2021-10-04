@@ -42,6 +42,7 @@ def compute_recommendations(knowledge_base_id):
     body = request.get_json()
     remove_factors = body and bool(body.get('remove_factors'))
     remove_statements = body and bool(body.get('remove_statements'))
+    remove_concepts = body and bool(body.get('remove_concepts'))
     es_host = body.get('es_host')
     es_port = body.get('es_port')
 
@@ -55,6 +56,7 @@ def compute_recommendations(knowledge_base_id):
         statement_ids=[],
         remove_factors=remove_factors,
         remove_statements=remove_statements,
+        remove_concepts=remove_concepts,
         es_host=es_host,
         es_port=es_port
     )
@@ -85,6 +87,7 @@ def compute_delta_recommendations(knowledge_base_id):
         statement_ids=statement_ids,
         remove_factors=False,
         remove_statements=False,
+        remove_concepts=False,
         es_host=es_host,
         es_port=es_port
     )
@@ -206,8 +209,9 @@ def empty_edge(project_id):
         raise BadRequest(
             description="num_recommendations must not exceed 10,000.")
 
+    knowledge_base_id = body['knowledge_base_id']
     subj_concept = body['subj_concept']
     obj_concept = body['obj_concept']
 
-    recommended_statements = get_edge_recommendations(project_id, subj_concept, obj_concept)[:num_recommendations]
+    recommended_statements = get_edge_recommendations(knowledge_base_id, project_id, subj_concept, obj_concept)[:num_recommendations]
     return jsonify({'recommendations': recommended_statements})

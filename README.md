@@ -73,6 +73,7 @@ Given subject and object concepts, return potential statements for regrounding
 ```
 POST /recommendation/:projectId/edge-regrounding
 {
+  knowledge_base_id: xyz,
   subj_concept: abc,
   obj_concept: def,
   num_recommendations: 10

@@ -20,6 +20,8 @@ if __name__ == '__main__':
                         help="Remove the factor index")
     parser.add_argument("-s", "--statements", action="store_true",
                         help="Remove the statements index")
+    parser.add_argument("-c", "--concepts", action="store_true",
+                        help="Remove the concepts index")
 
     args = parser.parse_args()
 
@@ -52,7 +54,8 @@ if __name__ == '__main__':
             project_index=None,
             statement_ids=[],
             remove_factors=args.factors,
-            remove_statements=args.statements
+            remove_statements=args.statements,
+            remove_concepts=args.concepts
         )
         ingestor.ingest()
     except Exception as e:
