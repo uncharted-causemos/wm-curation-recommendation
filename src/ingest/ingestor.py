@@ -201,7 +201,7 @@ class Ingestor():
         statements = self.es.search_with_scrolling(
             index,
             body,
-            scroll='1000m',
+            scroll='10m',
             size=10000,
             _source_includes=['obj.factor', 'subj.factor', 'obj.concept', 'subj.concept']
         )

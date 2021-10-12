@@ -1,4 +1,5 @@
 import time
+import hashlib
 
 from logic.preprocessing.text_preprocessor import TextPreprocessor
 from logic.preprocessing.concept_text_preprocessor import ConceptTextPreProcessor
@@ -70,5 +71,6 @@ class ConceptsProcessor:
                 copy = datum.copy()
                 del copy['vector_300_d']
                 copy['text_original'] = text
+                copy['_id'] = hashlib.sha256(text.encode('UTF-8')).hexdigest()
                 formatted_data.append(copy)
         return formatted_data

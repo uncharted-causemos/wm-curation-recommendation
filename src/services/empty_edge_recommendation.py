@@ -20,14 +20,13 @@ def _get_all_concepts(kb_id):
     es_results = app.config['ES'].search_with_scrolling(
         get_concept_index_id(kb_id),
         body,
-        scroll='1000m',
+        scroll='10m',
         size=10000)
     es_results = list(es_results)
     return es_results
 
 
 def _get_concept_by_name(kb_id, concept_name):
-    # Create KD Tree of all Concepts
     body = {
         'query': {
             'bool': {

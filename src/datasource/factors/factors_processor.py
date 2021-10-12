@@ -1,4 +1,5 @@
 import time
+import hashlib
 
 from logic.preprocessing.text_preprocessor import TextPreprocessor
 from datasource.utils import dedupe_recommendations
@@ -71,5 +72,6 @@ class FactorsProcessor():
                 copy = datum.copy()
                 del copy['vector_300_d']
                 copy['text_original'] = text
+                copy['_id'] = hashlib.sha256(text.encode('UTF-8')).hexdigest()
                 formatted_data.append(copy)
         return formatted_data
