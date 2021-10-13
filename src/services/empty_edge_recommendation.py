@@ -40,7 +40,8 @@ def _get_concept_by_name(kb_id, concept_name):
     }
     es_results = app.config['ES'].search(
         get_concept_index_id(kb_id),
-        body)
+        body,
+        size=1)
     es_results = list(map(lambda x: x['_source'], es_results['hits']['hits']))
     return es_results[0]
 
