@@ -14,9 +14,9 @@ and then subsequent classes can use it to load in the library and work with it f
 
 class SpacyWrapper():
     _nlp = None
-    _pipeline_components = ['tok2vec', 'tagger', 'parser', 'senter', 'ner', 'attribute_ruler', 'lemmatizer']
-    _lemmatizer_disabled_components = ['tok2vec', 'parser', 'senter', 'ner']
-    _tok2vec_disabled_components = ['tagger', 'parser', 'senter', 'ner', 'attribute_ruler', 'lemmatizer']
+    _all_pipeline_components = ['tok2vec', 'tagger', 'parser', 'senter', 'ner', 'attribute_ruler', 'lemmatizer']
+    _pipeline_components_without_lemmatizer = ['tok2vec', 'parser', 'senter', 'ner']
+    _pipeline_components_without_tok2vec = ['tagger', 'parser', 'senter', 'ner', 'attribute_ruler', 'lemmatizer']
 
     @classmethod
     def _initialize(cls):
@@ -30,7 +30,7 @@ class SpacyWrapper():
 
     @classmethod
     def embed(cls, sentence):
-        return cls.nlp()(sentence, disable=cls._tok2vec_disabled_components)
+        return cls.nlp()(sentence, disable=cls._pipeline_components_without_tok2vec)
 
     @classmethod
     def stop_words(cls):
@@ -38,5 +38,5 @@ class SpacyWrapper():
 
     @classmethod
     def lemmatize(cls, sentence):
-        tokens = cls.nlp()(sentence, disable=cls._lemmatizer_disabled_components)
+        tokens = cls.nlp()(sentence, disable=cls._pipeline_components_without_lemmatizer)
         return ' '.join([token.lemma_ for token in tokens])

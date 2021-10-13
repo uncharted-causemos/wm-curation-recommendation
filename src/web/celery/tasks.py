@@ -9,7 +9,15 @@ def progress(instance, state, message):
 
 
 @celery.task(bind=True, name="tasks.compute_recommendations")
-def compute_recommendations(self, kb_index, project_index, statement_ids, remove_factors, remove_statements, es_host, es_port):
+def compute_recommendations(self,
+                            kb_index,
+                            project_index,
+                            statement_ids,
+                            remove_factors,
+                            remove_statements,
+                            remove_concepts,
+                            es_host,
+                            es_port):
     message, state = (
         'Creating Recommendations',
         'PROGRESS'
@@ -27,7 +35,8 @@ def compute_recommendations(self, kb_index, project_index, statement_ids, remove
             project_index=project_index,
             statement_ids=statement_ids,
             remove_factors=remove_factors,
-            remove_statements=remove_statements)
+            remove_statements=remove_statements,
+            remove_concepts=remove_concepts)
         ingestor.ingest()
 
         # Keep track of successful state
