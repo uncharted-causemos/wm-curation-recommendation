@@ -7,7 +7,7 @@ try:
 except ImportError as e:
     print(e)
 
-from src.elastic.elastic_indices import get_concept_index_id
+from elastic.elastic_indices import get_concept_index_id
 
 
 def _get_all_concepts(kb_id):
