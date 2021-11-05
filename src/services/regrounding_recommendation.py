@@ -160,6 +160,9 @@ def compute_kl_divergence(factor, num_recommendations, project_index, knowledge_
             return factor_x
 
     concept_candidate = _get_concept_candidates(factor['text_original'], project_index)
+    if len(concept_candidate) == 0:
+        return []
+
     concept_candidate = reduce(_reduce_candidates, concept_candidate)
 
     # Compute kl divergence using the generalized method
