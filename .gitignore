@@ -1,5 +1,9 @@
-scripts/resources/
 .DS_Store
+experiments/
+scripts/resources/
+**/*.pkl
+**/*.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
