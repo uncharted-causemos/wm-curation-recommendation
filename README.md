@@ -18,7 +18,8 @@ Currently only able to run the app in a docker image. Ingest is run manually.
 1. `cd scripts`
 2. `python3 ingestion.py -fs -i <indra_id> -u <es_url>`
 
-
+# Run Ingestion (Dumpster Fire):
+`rsync -auv wm-curation-recommendation-service/ centos@10.65.18.69:~/wm-curation-recommendation --exclude=.venv/ --exclude=data/ --exclude=.git/ --exclude=.vscode/ --exclude=__pycache__/ --exclude=experiments/ --exclude=scripts/resources/ --exclude='**/*.pkl' --exclude='**/*.json'`
 # Docker setup for App
 
 `docker login docker-hub.uncharted.software`
