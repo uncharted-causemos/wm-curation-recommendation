@@ -9,7 +9,7 @@ Currently only able to run the app in a docker image. Ingest is run manually.
 
 # Run App:
 1. Perform steps in `Environment Setup` section (NB: If you wish to run the server locally you'll have to set `NLP_FILE_PATH` relative to `/src`)
-2. There are 2 options depending on if you want to run locally or via docker.
+2. There are 3 options depending on if you want to run locally or via docker.
     1. Run `docker-compose up --build` in the root of this project to run it via docker
     2. Run `docker build -t <image_name> .` and then `docker run -p 5000:5000 --env-file ./.env <image_name>` to run as a stand alone docker image
     3. Run `export FLASK_APP="src/app:create_app"` followed by `python3 -m flask run --host=127.0.0.1` to run the server locally
@@ -18,9 +18,10 @@ Currently only able to run the app in a docker image. Ingest is run manually.
 1. `cd scripts`
 2. `python3 ingestion.py -fs -i <indra_id> -u <es_url>`
 
-# Run Ingestion (Dumpster Fire):
-`rsync -auv wm-curation-recommendation-service/ centos@10.65.18.69:~/wm-curation-recommendation --exclude=.venv/ --exclude=data/ --exclude=.git/ --exclude=.vscode/ --exclude=__pycache__/ --exclude=experiments/ --exclude=scripts/resources/ --exclude='**/*.pkl' --exclude='**/*.json'`
-# Docker setup for App
+# Run Ingestion (Dumpster Fire: 10.65.18.69):
+1. Sync local code to dumpster-fire code because gitlab isn't accessible from dumpster-fire: `rsync -auv wm-curation-recommendation-service/ centos@10.65.18.69:~/wm-curation-recommendation --exclude=.venv/ --exclude=data/ --exclude=.git/ --exclude=.vscode/ --exclude=__pycache__/ --exclude=experiments/ --exclude=scripts/resources/ --exclude='**/*.pkl' --exclude='**/*.json'`
+2. Ssh to dumpster fire and run app using instructions above
+# Quick Docker Tips
 
 `docker login docker-hub.uncharted.software`
 
