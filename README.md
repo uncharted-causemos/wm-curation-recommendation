@@ -47,7 +47,7 @@ Currently only able to run the app in a docker image. Ingest is run manually.
 1. `cd scripts`
 2. `python3 ingestion.py -fs -i <indra_id> -u <es_url>`
 
-# Run Ingestion (Dumpster Fire: 10.65.18.69):
+# Run Ingestion/App (Dumpster Fire: 10.65.18.69):
 1. Sync local code to dumpster-fire code because gitlab isn't accessible from dumpster-fire: `rsync -auv wm-curation-recommendation-service/ centos@10.65.18.69:~/wm-curation-recommendation --exclude=.venv/ --exclude=data/ --exclude=.git/ --exclude=.vscode/ --exclude=__pycache__/ --exclude=experiments/ --exclude=scripts/resources/ --exclude='**/*.pkl' --exclude='**/*.json'`
 2. Ssh to dumpster fire and run app using instructions above
 # Quick Docker Tips
