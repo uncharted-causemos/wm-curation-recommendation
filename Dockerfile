@@ -9,12 +9,13 @@ ENV BUILD_DEPS="build-essential" \
 
 RUN apt-get update \
     && apt-get install -y ${BUILD_DEPS} ${APP_DEPS} --no-install-recommends \
-    && python -m pip install --upgrade pip \
-    && pip install -r requirements.txt \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /usr/share/doc && rm -rf /usr/share/man \
     && apt-get purge -y --auto-remove ${BUILD_DEPS} \
     && apt-get clean
+
+RUN python -m pip install --upgrade pip \
+    && pip install -r requirements.txt
 
 ARG FLASK_ENV="production"
 ENV FLASK_ENV="${FLASK_ENV}"
