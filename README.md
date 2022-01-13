@@ -6,6 +6,35 @@ Currently only able to run the app in a docker image. Ingest is run manually.
 1. Download the large english spacy model from [here](https://spacy.io/models/en), by scrolling down to `en_core_web_lg`, click on release details which will take you to the github page, scroll down to assets and download the tar.gz file, unzip and put folder in `data/` directory
 2. `pip3 install -r requirements.txt` (create a virtualenv first if you so choose)
 3. Fill in `ES_HOST`, `ES_PORT`, and `NLP_FILE_PATH` in the `.env` file with the appropriate settings
+4. In VSCode, if you want to debug ingestion locally, create a launch.json file (by going into the debugging panel on the left, and clicking "create a launch.json file"). Then paste the following into your launch.json file:
+```
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Ingestor",
+            "type": "python",
+            "request": "launch",
+            "program": "ingestion.py",
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}/scripts",
+            "justMyCode": false,
+            "args": [
+                "-f",
+                "-s",
+                "-c",
+                "-i",
+                "indra-314b9db6-458c-4108-abdc-bdea07fe4cb2",
+                "-u",
+                "10.65.18.69:9200"
+            ]
+        }
+    ]
+}
+```
 
 # Run App:
 1. Perform steps in `Environment Setup` section (NB: If you wish to run the server locally you'll have to set `NLP_FILE_PATH` relative to `/src`)
