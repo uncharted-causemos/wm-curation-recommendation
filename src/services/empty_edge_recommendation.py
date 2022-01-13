@@ -1,4 +1,3 @@
-from re import sub
 import numpy as np
 from sklearn.neighbors import KDTree
 
@@ -7,43 +6,7 @@ try:
 except ImportError as e:
     print(e)
 
-from elastic.elastic_indices import get_concept_index_id
-
-
-def _get_all_concepts(kb_id):
-    # Create KD Tree of all Concepts
-    body = {
-        'query': {
-            'match_all': {}
-        }
-    }
-    es_results = app.config['ES'].search_with_scrolling(
-        get_concept_index_id(kb_id),
-        body,
-        scroll='10m',
-        size=10000)
-    es_results = list(es_results)
-    return es_results
-
-
-def _get_concept_by_name(kb_id, concept_name):
-    body = {
-        'query': {
-            'bool': {
-                'filter': {
-                    'term': {
-                        'text_original': concept_name
-                    }
-                }
-            }
-        }
-    }
-    es_results = app.config['ES'].search(
-        get_concept_index_id(kb_id),
-        body,
-        size=1)
-    es_results = list(map(lambda x: x['_source'], es_results['hits']['hits']))
-    return es_results[0]
+from services.utils import get_all_concepts, get_concept_by_name
 
 
 def _get_edges(project_id, subj_concepts, obj_concepts):
@@ -80,13 +43,13 @@ It scores the results from ES based on the distances in embedding space and retu
 def get_edge_recommendations(kb_id, project_id, subj_concept, obj_concept):
     NUM_NEAREST_NEIGHBORS = 25
 
-    es_concepts = _get_all_concepts(kb_id)
+    es_concepts = get_all_concepts(kb_id)
 
     vectors = np.array(list(map(lambda x: x['vector_2_d'], es_concepts)))
     kd_tree = KDTree(vectors, metric='euclidean', leaf_size=100)
 
-    es_subj_concept = _get_concept_by_name(kb_id, subj_concept)
-    es_obj_concept = _get_concept_by_name(kb_id, obj_concept)
+    es_subj_concept = get_concept_by_name(kb_id, subj_concept)
+    es_obj_concept = get_concept_by_name(kb_id, obj_concept)
 
     nn_dist_subj, nn_indices_subj = kd_tree.query(
         np.array(es_subj_concept['vector_2_d']).reshape(1, -1),

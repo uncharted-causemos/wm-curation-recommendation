@@ -14,6 +14,8 @@ from services.regrounding_recommendation import compute_kl_divergence
 
 from services.empty_edge_recommendation import get_edge_recommendations
 
+from services.concepts import find_similar_concepts
+
 from web.celery import tasks
 from web.celery import celery
 
@@ -215,3 +217,26 @@ def empty_edge(project_id):
 
     recommended_statements = get_edge_recommendations(knowledge_base_id, project_id, subj_concept, obj_concept)[:num_recommendations]
     return jsonify({'recommendations': recommended_statements})
+
+
+'''
+Accepts a concept, and attempts to find N similar concepts. 
+
+The lower the score, the more similar the concept is to the query concept.
+'''
+
+
+@recommendation_api.route('/similar-concepts', methods=['POST'])
+def similar_concepts():
+    body = request.get_json()
+
+    num_recommendations = int(body['num_recommendations'])
+    if num_recommendations > 10000:  # Max num recommendations allowed
+        raise BadRequest(
+            description="num_recommendations must not exceed 10,000.")
+
+    knowledge_base_id = body['knowledge_base_id']
+    concept = body['concept']
+
+    similar_concepts = find_similar_concepts(knowledge_base_id, concept, num_recommendations)
+    return jsonify({'similar_concepts': similar_concepts})
