@@ -3,7 +3,7 @@ Currently only able to run the app in a docker image. Ingest is run manually.
 # General Prerequisites:
 
 # Environment Setup
-1. Download the large english spacy model from [here](https://spacy.io/models/en), unzip and put folder in `data/` directory
+1. Download the large english spacy model from [here](https://spacy.io/models/en), by scrolling down to `en_core_web_lg`, click on release details which will take you to the github page, scroll down to assets and download the tar.gz file, unzip and put folder in `data/` directory
 2. `pip3 install -r requirements.txt` (create a virtualenv first if you so choose)
 3. Fill in `ES_HOST`, `ES_PORT`, and `NLP_FILE_PATH` in the `.env` file with the appropriate settings
 
