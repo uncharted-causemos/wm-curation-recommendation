@@ -50,6 +50,7 @@ Currently only able to run the app in a docker image. Ingest is run manually.
 # Run Ingestion/App (Dumpster Fire: 10.65.18.69):
 1. Sync local code to dumpster-fire code because gitlab isn't accessible from dumpster-fire: `rsync -auv wm-curation-recommendation-service/ centos@10.65.18.69:~/wm-curation-recommendation --exclude=.venv/ --exclude=data/ --exclude=.git/ --exclude=.vscode/ --exclude=__pycache__/ --exclude=experiments/ --exclude=scripts/resources/ --exclude='**/*.pkl' --exclude='**/*.json'`
 2. Ssh to dumpster fire and run app using instructions above
+3. In order to run the app on the server such that it doesn't end when you close your ssh session, you need to run your commands in a tmux session. Run `tmux new -s curation-service`, then `tmux a -t curation-service`. This creates a session that will run even when you exit your ssh session. From within this tmux session, you can run the app using the instructions above. To exit: `command + a, + d`
 # Quick Docker Tips
 
 `docker login docker-hub.uncharted.software`
