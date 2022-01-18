@@ -32,7 +32,7 @@ class Elastic:
         """
         self._host = host
         self._port = port
-        self.client = Elasticsearch(host, port=port, **kwargs)
+        self.client = Elasticsearch(host, port=port, verify_certs=False, **kwargs)
 
     def get_host(self):
         return self._host

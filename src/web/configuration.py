@@ -12,7 +12,8 @@ class Config:
 
     ES = Elastic(
         os.getenv('ES_HOST', ''),
-        os.getenv('ES_PORT', '9200')
+        os.getenv('ES_PORT', '9200'),
+        http_auth=(os.getenv('ES_USER', ''), os.getenv('ES_PW', ''))
     )
 
     DEBUG = True
