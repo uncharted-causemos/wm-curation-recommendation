@@ -48,6 +48,7 @@ if __name__ == '__main__':
     es_args = args.url.rsplit(':', 1)
     es_user = args.username
     es_pw = args.password
+    # needed if we have auth
     es_scheme = "https"
     if es_user is None:
         es_user = ""
