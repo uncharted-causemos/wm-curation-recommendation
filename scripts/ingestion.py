@@ -22,8 +22,6 @@ if __name__ == '__main__':
                         help="Remove the statements index")
     parser.add_argument("-c", "--concepts", action="store_true",
                         help="Remove the concepts index")
-    parser.add_argument("-sc", "--scheme", type=str,
-                        help="Scheme for host, https or http")
     parser.add_argument("-un", "--username", type=str, help="Username for ES host")
     parser.add_argument("-pw", "--password", type=str, help="Password for ES host")
 
@@ -50,9 +48,10 @@ if __name__ == '__main__':
     es_args = args.url.rsplit(':', 1)
     es_user = args.username
     es_pw = args.password
-    es_scheme = args.scheme
+    es_scheme = "https"
     if es_user is None:
         es_user = ""
+        es_scheme = "http"
     if es_pw is None:
         es_pw = ""
     if es_scheme is None:

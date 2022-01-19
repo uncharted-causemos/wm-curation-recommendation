@@ -10,14 +10,14 @@ class Config:
     MODULE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     PROJECT_DIR = os.path.dirname(MODULE_DIR)
 
-    default_scheme = 'http'
+    scheme = 'http'
     if os.getenv('ES_USERNAME', '') != '':
-        default_scheme = 'https'
+        scheme = 'https'
     ES = Elastic(
         os.getenv('ES_HOST', ''),
         os.getenv('ES_PORT', '9200'),
         http_auth=(os.getenv('ES_USERNAME', ''), os.getenv('ES_PASSWORD', '')),
-        scheme=os.getenv('ES_SCHEME', default_scheme)
+        scheme=scheme
     )
 
     DEBUG = True
