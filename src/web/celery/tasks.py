@@ -1,6 +1,7 @@
 from ingest.ingestor import Ingestor
 from elastic.elastic import Elastic
 from web.celery import celery
+from web.configuration import Config
 
 
 def progress(instance, state, message):
@@ -28,7 +29,8 @@ def compute_recommendations(self,
         progress(self, state, message)
 
         # Ingest
-        es = Elastic(es_host, es_port, timeout=60)
+        es = Elastic(es_host, es_port, http_auth=(Config.ES_USERNAME, Config.ES_PASSWORD),
+            scheme=Config.SCHEME, timeout=60)
         ingestor = Ingestor(
             es=es,
             kb_index=kb_index,
