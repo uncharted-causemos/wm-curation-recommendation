@@ -22,6 +22,10 @@ if __name__ == '__main__':
                         help="Remove the statements index")
     parser.add_argument("-c", "--concepts", action="store_true",
                         help="Remove the concepts index")
+    parser.add_argument("-sc", "--scheme", type=str,
+                        help="Scheme for host, https or http")
+    parser.add_argument("-un", "--username", type=str, help="Username for ES host")
+    parser.add_argument("-pw", "--password", type=str, help="Password for ES host")
 
     args = parser.parse_args()
 
@@ -44,7 +48,16 @@ if __name__ == '__main__':
 
     # Create ES connection from args
     es_args = args.url.rsplit(':', 1)
-    es = Elastic(es_args[0].strip(), es_args[1].strip(), timeout=60)
+    es_user = args.username
+    es_pw = args.password
+    es_scheme = args.scheme
+    if es_user is None:
+        es_user = ""
+    if es_pw is None:
+        es_pw = ""
+    if es_scheme is None:
+        es_scheme = "http"
+    es = Elastic(es_args[0].strip(), es_args[1].strip(), http_auth=(es_user, es_pw), scheme=es_scheme, timeout=60)
 
     try:
         print(f'Generating recommendations for index: {args.index}')
