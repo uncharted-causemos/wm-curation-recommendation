@@ -17,8 +17,7 @@ def compute_recommendations(self,
                             remove_factors,
                             remove_statements,
                             remove_concepts,
-                            es_host,
-                            es_port):
+                            es_url):
     message, state = (
         'Creating Recommendations',
         'PROGRESS'
@@ -29,8 +28,7 @@ def compute_recommendations(self,
         progress(self, state, message)
 
         # Ingest
-        es = Elastic(es_host, es_port, http_auth=(Config.ES_USERNAME, Config.ES_PASSWORD),
-            scheme=Config.SCHEME, timeout=60)
+        es = Elastic(es_url, http_auth=(Config.ES_USERNAME, Config.ES_PASSWORD), timeout=60)
         ingestor = Ingestor(
             es=es,
             kb_index=kb_index,
