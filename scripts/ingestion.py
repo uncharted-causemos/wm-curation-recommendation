@@ -45,19 +45,14 @@ if __name__ == '__main__':
     start_time = time.time()
 
     # Create ES connection from args
-    es_args = args.url.rsplit(':', 1)
+    es_args = args.url
     es_user = args.username
     es_pw = args.password
-    # needed if we have auth
-    es_scheme = "https"
     if es_user is None:
         es_user = ""
-        es_scheme = "http"
     if es_pw is None:
         es_pw = ""
-    if es_scheme is None:
-        es_scheme = "http"
-    es = Elastic(es_args[0].strip(), es_args[1].strip(), http_auth=(es_user, es_pw), scheme=es_scheme, timeout=60)
+    es = Elastic(es_args.strip(), http_auth=(es_user, es_pw), timeout=60)
 
     try:
         print(f'Generating recommendations for index: {args.index}')

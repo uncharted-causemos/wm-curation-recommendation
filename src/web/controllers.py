@@ -45,11 +45,10 @@ def compute_recommendations(knowledge_base_id):
     remove_factors = body and bool(body.get('remove_factors'))
     remove_statements = body and bool(body.get('remove_statements'))
     remove_concepts = body and bool(body.get('remove_concepts'))
-    es_host = body.get('es_host')
-    es_port = body.get('es_port')
+    es_url = body.get('es_url')
 
-    if es_host is None or es_port is None:
-        raise BadRequest(description="es_host and es_port are required arguments.")
+    if es_url is None:
+        raise BadRequest(description="es_url is a required argument.")
 
     # Run the Long running ingestion
     task = tasks.compute_recommendations.delay(
@@ -59,8 +58,7 @@ def compute_recommendations(knowledge_base_id):
         remove_factors=remove_factors,
         remove_statements=remove_statements,
         remove_concepts=remove_concepts,
-        es_host=es_host,
-        es_port=es_port
+        es_url=es_url
     )
     return jsonify({
         'task_id': task.id
@@ -71,13 +69,12 @@ def compute_recommendations(knowledge_base_id):
 def compute_delta_recommendations(knowledge_base_id):
     # Get the params
     body = request.get_json()
-    es_host = body.get('es_host')
-    es_port = body.get('es_port')
+    es_url = body.get('es_url')
     project_index = body.get('project_index')
     statement_ids = body.get('statement_ids')
 
-    if es_host is None or es_port is None:
-        raise BadRequest(description='es_host and es_port are required arguments.')
+    if es_url is None:
+        raise BadRequest(description='es_url is a required argument.')
 
     if len(statement_ids) == 0:
         raise BadRequest(description='statement_ids must not be empty.')
@@ -90,8 +87,7 @@ def compute_delta_recommendations(knowledge_base_id):
         remove_factors=False,
         remove_statements=False,
         remove_concepts=False,
-        es_host=es_host,
-        es_port=es_port
+        es_url=es_url
     )
     return jsonify({
         'task_id': task.id

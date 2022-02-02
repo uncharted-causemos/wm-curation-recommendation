@@ -5,7 +5,7 @@ Currently only able to run the app in a docker image. Ingest is run manually.
 # Environment Setup
 1. Download the large english spacy model from [here](https://spacy.io/models/en), by scrolling down to `en_core_web_lg`, click on release details which will take you to the github page, scroll down to assets and download the tar.gz file, unzip and put folder in `data/` directory
 2. `pip3 install -r requirements.txt` (create a virtualenv first if you so choose)
-3. Fill in `ES_HOST`, `ES_PORT`, and `NLP_FILE_PATH` in the `.env` file with the appropriate settings
+3. Fill in `ES_URL`, and `NLP_FILE_PATH` in the `.env` file with the appropriate settings
 4. In VSCode, if you want to debug ingestion locally, create a launch.json file (by going into the debugging panel on the left, and clicking "create a launch.json file"). Then paste the following into your launch.json file:
 ```
 {
@@ -48,7 +48,7 @@ Currently only able to run the app in a docker image. Ingest is run manually.
 2. `python3 ingestion.py -fs -i <indra_id> -u <es_url>`
 
 # Run Ingestion/App (Dumpster Fire: 10.65.18.69):
-1. Sync local code to dumpster-fire code because gitlab isn't accessible from dumpster-fire: `rsync -auv wm-curation-recommendation-service/ centos@10.65.18.69:~/wm-curation-recommendation --exclude=.venv/ --exclude=data/ --exclude=.git/ --exclude=.vscode/ --exclude=__pycache__/ --exclude=experiments/ --exclude=scripts/resources/ --exclude='**/*.pkl' --exclude='**/*.json'`
+1. Sync local code to dumpster-fire code because gitlab isn't accessible from dumpster-fire: `rsync -auv wm-curation-recommendation-service/ centos@10.65.18.69:~/wm-curation-recommendation --exclude=.venv/ --exclude=data/ --exclude=.git/ --exclude=.vscode/ --exclude=__pycache__/ --exclude=experiments/ --exclude=scripts/resources/ --exclude='**/*.pkl' --exclude='**/*.json'`. If `wm-curation-recommendation-service` is not the name of your folder containing the code, replace it with your root folder's name.
 2. Ssh to dumpster fire and run app using instructions above
 3. In order to run the app on the server such that it doesn't end when you close your ssh session, you need to run your commands in a tmux session. Run `tmux new -s curation-service`, then `tmux a -t curation-service`. This creates a session that will run even when you exit your ssh session. From within this tmux session, you can run the app using the instructions above. To exit: `ctrl + b, + d`
 # Quick Docker Tips
@@ -123,8 +123,7 @@ curl -H "Content-type:application/json" -XPOST http://<curation_server>:<port>/r
 {
   "remove_factors": true,
   "remove_statements": true,
-  "es_host": <destination_es>,
-  "es_port": 9200
+  "es_url": <destination_es>:9200
 }
 '
 ```
@@ -141,8 +140,7 @@ http://<curation_server>:<port>/recommendation/task/<task_id>
 ```
 curl -H "Content-type: application/json" -XPOST http:<curation_server>:<port>/recommendation/-delta-ingest/<indra_index> -d'
 {
-  "es_host": <destination_es>,
-  "es_port": 9200,
+  "es_url": <destination_es>:9200,
   "statement_ids": [new statements from project],
   "project_id": <projectId>
 }

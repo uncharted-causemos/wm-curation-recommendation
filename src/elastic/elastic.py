@@ -20,19 +20,18 @@ class Elastic:
     _port = None
 
     @staticmethod
-    def client(host, port, **kwargs):
+    def client(host, **kwargs):
         """
         Return a new ES client
         """
-        return Elastic(host, port, **kwargs)
+        return Elastic(host, **kwargs)
 
-    def __init__(self, host, port, **kwargs):
+    def __init__(self, host, **kwargs):
         """
         Initialize the ElasticSearch Client
         """
         self._host = host
-        self._port = port
-        self.client = Elasticsearch(host, port=port, verify_certs=False, **kwargs)
+        self.client = Elasticsearch(host, verify_certs=False, **kwargs)
 
     def get_host(self):
         return self._host
